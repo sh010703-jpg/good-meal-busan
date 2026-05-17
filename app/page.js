@@ -275,13 +275,6 @@ export default function Home() {
               ))}
             </div>
           </div>
-
-          <div className="heroSide">
-            <div className="cuteCircle">🍱</div>
-            <div className="floatingEmoji one">🍜</div>
-            <div className="floatingEmoji two">☕</div>
-            <div className="floatingEmoji three">🍙</div>
-          </div>
         </div>
       </section>
 
@@ -341,10 +334,20 @@ export default function Home() {
                   {pagedStores.map((store, index) => {
                     const address = stripHtml(store?.adres);
                     const mapQuery = encodeURIComponent(`${store?.sj} ${address}`);
+                    const imageUrl = getImageUrl(store?.imgFile1);
 
                     return (
                       <div className="storeCard" key={`${store?.sj}-${index}`}>
-                        <div className="storeEmoji">{getStoreEmoji(store?.cn)}</div>
+                        {imageUrl ? (
+                          <img
+                            className="storePhoto"
+                            src={imageUrl}
+                            alt={stripHtml(store?.sj)}
+                          />
+                        ) : (
+                          <div className="storeEmoji">{getStoreEmoji(store?.cn)}</div>
+                        )}
+
                         <strong>{stripHtml(store?.sj)}</strong>
 
                         <div className="storeChips">
@@ -453,6 +456,7 @@ export default function Home() {
                     const store = item.store;
                     const address = stripHtml(store?.adres);
                     const mapQuery = encodeURIComponent(`${item.bsshNm} ${address}`);
+                    const imageUrl = getImageUrl(store?.imgFile1);
 
                     return (
                       <div
@@ -469,9 +473,17 @@ export default function Home() {
                           {item.priceNumber.toLocaleString()}원
                         </div>
 
-                        <div className="menuIcon">
-                          {getMenuEmoji(item.itemNm)}
-                        </div>
+                        {imageUrl ? (
+                          <img
+                            className="resultPhoto"
+                            src={imageUrl}
+                            alt={stripHtml(item.bsshNm)}
+                          />
+                        ) : (
+                          <div className="menuIcon">
+                            {getMenuEmoji(item.itemNm)}
+                          </div>
+                        )}
 
                         <div className="resultTitle">
                           <strong>{stripHtml(item.bsshNm)}</strong>
@@ -604,11 +616,7 @@ export default function Home() {
         }
 
         .heroCard {
-          display: grid;
-          grid-template-columns: 1fr 0.48fr;
-          gap: 24px;
-          align-items: center;
-          padding: 34px;
+          padding: 36px 34px;
           border-radius: 34px;
           background:
             radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.7), transparent 26%),
@@ -619,6 +627,8 @@ export default function Home() {
         }
 
         .heroText {
+          max-width: 760px;
+          margin: 0 auto;
           text-align: center;
         }
 
@@ -727,58 +737,6 @@ export default function Home() {
           background: #fff0eb;
           border-color: #ffb3a8;
           color: #e85d50;
-        }
-
-        .heroSide {
-          position: relative;
-          min-height: 250px;
-        }
-
-        .cuteCircle {
-          position: absolute;
-          right: 78px;
-          top: 76px;
-          width: 132px;
-          height: 132px;
-          border-radius: 44px;
-          background: rgba(255, 255, 255, 0.72);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 58px;
-          box-shadow: 0 18px 40px rgba(86, 94, 110, 0.12);
-          transform: rotate(-5deg);
-        }
-
-        .floatingEmoji {
-          position: absolute;
-          width: 62px;
-          height: 62px;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.78);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 28px;
-          box-shadow: 0 14px 28px rgba(86, 94, 110, 0.12);
-        }
-
-        .floatingEmoji.one {
-          top: 8px;
-          left: 20px;
-          transform: rotate(-8deg);
-        }
-
-        .floatingEmoji.two {
-          top: 120px;
-          right: 4px;
-          transform: rotate(7deg);
-        }
-
-        .floatingEmoji.three {
-          bottom: 4px;
-          left: 12px;
-          transform: rotate(-6deg);
         }
 
         .summaryRow {
@@ -920,6 +878,21 @@ export default function Home() {
           box-shadow: 0 22px 42px rgba(86, 94, 110, 0.1);
         }
 
+        .storePhoto,
+        .resultPhoto {
+          width: 100%;
+          height: 160px;
+          object-fit: cover;
+          border-radius: 22px;
+          margin-bottom: 16px;
+          background: #f3f4f6;
+          box-shadow: 0 10px 24px rgba(86, 94, 110, 0.08);
+        }
+
+        .resultPhoto {
+          margin-top: 4px;
+        }
+
         .storeEmoji,
         .menuIcon {
           width: 54px;
@@ -1048,6 +1021,7 @@ export default function Home() {
           font-size: 14px;
           font-weight: 900;
           box-shadow: 0 10px 24px rgba(242, 107, 94, 0.22);
+          z-index: 2;
         }
 
         .pricePill {
@@ -1060,6 +1034,7 @@ export default function Home() {
           border-radius: 999px;
           font-size: 15px;
           font-weight: 900;
+          z-index: 2;
         }
 
         .resultCard {
@@ -1156,14 +1131,6 @@ export default function Home() {
         }
 
         @media (max-width: 960px) {
-          .heroCard {
-            grid-template-columns: 1fr;
-          }
-
-          .heroSide {
-            display: none;
-          }
-
           .stepPanel {
             grid-template-columns: 1fr;
           }
@@ -1226,6 +1193,11 @@ export default function Home() {
             font-size: 27px;
           }
 
+          .storePhoto,
+          .resultPhoto {
+            height: 180px;
+          }
+
           .pagination {
             gap: 10px;
             padding: 12px 12px;
@@ -1285,7 +1257,6 @@ function cleanText(value) {
   return String(value ?? "")
     .replace(/<[^>]*>/g, "")
     .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, "")
     .trim();
 }
 
@@ -1300,6 +1271,20 @@ function stripHtml(value) {
 function toNumber(value) {
   const onlyNumber = String(value ?? "").replace(/[^0-9]/g, "");
   return Number(onlyNumber || 0);
+}
+
+function getImageUrl(value) {
+  const raw = String(value ?? "")
+    .replace(/&amp;/g, "&")
+    .trim();
+
+  if (!raw || raw === "null" || raw === "undefined") return "";
+
+  if (raw.startsWith("http://") || raw.startsWith("https://")) {
+    return raw;
+  }
+
+  return `https://${raw}`;
 }
 
 function getStoreEmoji(category) {
