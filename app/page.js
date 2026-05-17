@@ -277,19 +277,7 @@ export default function Home() {
           </div>
 
           <div className="heroSide">
-            <div className="sideCard main">
-              <span>선택 지역</span>
-              <strong>{selectedDistrict}</strong>
-              <p>착한가격업소 {storesByDistrict.length}곳</p>
-            </div>
-
-            <div className="sideCard">
-              <span>최저가</span>
-              <strong>
-                {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "메뉴 선택"}
-              </strong>
-            </div>
-
+            <div className="cuteCircle">🍱</div>
             <div className="floatingEmoji one">🍜</div>
             <div className="floatingEmoji two">☕</div>
             <div className="floatingEmoji three">🍙</div>
@@ -617,8 +605,8 @@ export default function Home() {
 
         .heroCard {
           display: grid;
-          grid-template-columns: 1.16fr 0.84fr;
-          gap: 28px;
+          grid-template-columns: 1fr 0.48fr;
+          gap: 24px;
           align-items: center;
           padding: 34px;
           border-radius: 34px;
@@ -628,6 +616,10 @@ export default function Home() {
           border: 1px solid rgba(255, 255, 255, 0.9);
           box-shadow: 0 24px 62px rgba(86, 94, 110, 0.12);
           overflow: hidden;
+        }
+
+        .heroText {
+          text-align: center;
         }
 
         .eyebrow {
@@ -641,18 +633,20 @@ export default function Home() {
         h1 {
           margin: 0;
           color: #17324d;
-          font-size: clamp(42px, 6vw, 72px);
+          font-size: clamp(46px, 7vw, 82px);
           line-height: 1;
-          letter-spacing: -2.7px;
+          letter-spacing: -3px;
           font-weight: 950;
         }
 
         .desc {
-          margin: 18px 0 24px;
-          max-width: 650px;
+          margin: 18px auto 24px;
+          max-width: 540px;
           color: #52616b;
           font-size: 17px;
           line-height: 1.7;
+          text-align: center;
+          word-break: keep-all;
         }
 
         .stepPanel {
@@ -673,6 +667,7 @@ export default function Home() {
           color: #52616b;
           font-size: 13px;
           font-weight: 900;
+          text-align: left;
         }
 
         .selectBox select,
@@ -708,6 +703,7 @@ export default function Home() {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
+          justify-content: center;
           margin-top: 16px;
         }
 
@@ -735,50 +731,23 @@ export default function Home() {
 
         .heroSide {
           position: relative;
-          min-height: 285px;
+          min-height: 250px;
         }
 
-        .sideCard {
+        .cuteCircle {
           position: absolute;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          border-radius: 28px;
-          padding: 22px;
-          box-shadow: 0 18px 40px rgba(86, 94, 110, 0.14);
-        }
-
-        .sideCard.main {
-          top: 24px;
-          right: 30px;
-          width: 245px;
-        }
-
-        .sideCard:not(.main) {
-          bottom: 28px;
-          left: 52px;
-          width: 210px;
-        }
-
-        .sideCard span {
-          display: block;
-          color: #7b8794;
-          font-size: 13px;
-          font-weight: 800;
-          margin-bottom: 8px;
-        }
-
-        .sideCard strong {
-          display: block;
-          color: #17324d;
-          font-size: 25px;
-          margin-bottom: 8px;
-        }
-
-        .sideCard p {
-          margin: 0;
-          color: #f26b5e;
-          font-size: 17px;
-          font-weight: 900;
+          right: 78px;
+          top: 76px;
+          width: 132px;
+          height: 132px;
+          border-radius: 44px;
+          background: rgba(255, 255, 255, 0.72);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 58px;
+          box-shadow: 0 18px 40px rgba(86, 94, 110, 0.12);
+          transform: rotate(-5deg);
         }
 
         .floatingEmoji {
@@ -1104,31 +1073,85 @@ export default function Home() {
           font-weight: 900;
         }
 
-        .pagination {
-          margin-top: 24px;
+        .paginationWrap {
           display: flex;
           justify-content: center;
-          align-items: center;
-          gap: 14px;
+          margin-top: 34px;
         }
 
-        .pagination button {
-          border: none;
-          background: #17324d;
-          color: white;
+        .pagination {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid #eadfd4;
           border-radius: 999px;
-          padding: 11px 18px;
+          padding: 14px 18px;
+          box-shadow: 0 14px 32px rgba(86, 94, 110, 0.1);
+        }
+
+        .pageBtn {
+          border: none;
+          background: linear-gradient(135deg, #17324d, #27496b);
+          color: #ffffff;
+          border-radius: 999px;
+          padding: 14px 24px;
+          font-size: 16px;
           font-weight: 900;
           cursor: pointer;
+          min-width: 110px;
+          transition: all 0.2s ease;
+          box-shadow: 0 8px 18px rgba(23, 50, 77, 0.18);
         }
 
-        .pagination button:disabled {
+        .pageBtn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 22px rgba(23, 50, 77, 0.22);
+        }
+
+        .pageBtn:disabled {
           background: #d7dce2;
+          color: #8b97a3;
           cursor: not-allowed;
+          box-shadow: none;
         }
 
-        .pagination span {
-          color: #52616b;
+        .pageIndicator {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          min-width: 120px;
+          padding: 10px 18px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #fff4eb, #ffffff);
+          border: 1px solid #f2d4c8;
+        }
+
+        .currentPage {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ff8a7a, #f26b5e);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: 900;
+          box-shadow: 0 8px 18px rgba(242, 107, 94, 0.24);
+        }
+
+        .pageSlash {
+          color: #97a2ad;
+          font-size: 18px;
+          font-weight: 800;
+        }
+
+        .totalPage {
+          color: #17324d;
+          font-size: 18px;
           font-weight: 900;
         }
 
@@ -1196,11 +1219,39 @@ export default function Home() {
           }
 
           h1 {
-            font-size: 46px;
+            font-size: 48px;
           }
 
           h2 {
             font-size: 27px;
+          }
+
+          .pagination {
+            gap: 10px;
+            padding: 12px 12px;
+            flex-wrap: wrap;
+          }
+
+          .pageBtn {
+            min-width: 96px;
+            padding: 12px 18px;
+            font-size: 15px;
+          }
+
+          .pageIndicator {
+            min-width: 100px;
+            padding: 8px 14px;
+          }
+
+          .currentPage {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+          }
+
+          .totalPage,
+          .pageSlash {
+            font-size: 16px;
           }
         }
       `}</style>
@@ -1210,16 +1261,22 @@ export default function Home() {
 
 function Pagination({ page, totalPages, onPrev, onNext }) {
   return (
-    <div className="pagination">
-      <button onClick={onPrev} disabled={page <= 1}>
-        ← 이전
-      </button>
-      <span>
-        {page} / {totalPages}
-      </span>
-      <button onClick={onNext} disabled={page >= totalPages}>
-        다음 →
-      </button>
+    <div className="paginationWrap">
+      <div className="pagination">
+        <button className="pageBtn" onClick={onPrev} disabled={page <= 1}>
+          ← 이전
+        </button>
+
+        <div className="pageIndicator">
+          <span className="currentPage">{page}</span>
+          <span className="pageSlash">/</span>
+          <span className="totalPage">{totalPages}</span>
+        </div>
+
+        <button className="pageBtn" onClick={onNext} disabled={page >= totalPages}>
+          다음 →
+        </button>
+      </div>
     </div>
   );
 }
