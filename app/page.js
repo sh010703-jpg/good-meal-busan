@@ -22,6 +22,8 @@ const BUSAN_DISTRICTS = [
   "해운대구",
 ];
 
+const ITEMS_PER_PAGE = 12;
+
 export default function Home() {
   const [menus, setMenus] = useState([]);
   const [stores, setStores] = useState([]);
@@ -29,6 +31,8 @@ export default function Home() {
   const [keyword, setKeyword] = useState("");
   const [selectedKeyword, setSelectedKeyword] = useState("");
   const [priceLimit, setPriceLimit] = useState("all");
+  const [storePage, setStorePage] = useState(1);
+  const [resultPage, setResultPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -111,11 +115,17 @@ export default function Home() {
     });
   }, [stores, selectedDistrict]);
 
-  const previewStores = useMemo(() => {
-    return storesByDistrict.slice(0, 12);
-  }, [storesByDistrict]);
+  const pagedStores = useMemo(() => {
+    const start = (storePage - 1) * ITEMS_PER_PAGE;
+    return storesByDistrict.slice(start, start + ITEMS_PER_PAGE);
+  }, [storesByDistrict, storePage]);
 
-  const results = useMemo(() => {
+  const totalStorePages = Math.max(
+    1,
+    Math.ceil(storesByDistrict.length / ITEMS_PER_PAGE)
+  );
+
+  const allResults = useMemo(() => {
     const searchWord = selectedKeyword.trim();
 
     if (!searchWord) return [];
@@ -145,32 +155,53 @@ export default function Home() {
         if (priceLimit === "all") return true;
         return item.priceNumber <= Number(priceLimit);
       })
-      .sort((a, b) => a.priceNumber - b.priceNumber)
-      .slice(0, 60);
+      .sort((a, b) => a.priceNumber - b.priceNumber);
   }, [menus, selectedKeyword, selectedDistrict, priceLimit, storeMap]);
 
-  const cheapest = results[0];
+  const pagedResults = useMemo(() => {
+    const start = (resultPage - 1) * ITEMS_PER_PAGE;
+    return allResults.slice(start, start + ITEMS_PER_PAGE);
+  }, [allResults, resultPage]);
+
+  const totalResultPages = Math.max(
+    1,
+    Math.ceil(allResults.length / ITEMS_PER_PAGE)
+  );
+
+  const cheapest = allResults[0];
 
   function handleSearch() {
     setSelectedKeyword(keyword.trim());
+    setResultPage(1);
   }
 
   function handleQuickSearch(word) {
     setKeyword(word);
     setSelectedKeyword(word);
+    setResultPage(1);
   }
 
   function handleDistrictChange(e) {
     setSelectedDistrict(e.target.value);
     setSelectedKeyword("");
     setKeyword("");
+    setStorePage(1);
+    setResultPage(1);
+  }
+
+  function handlePriceLimit(value) {
+    setPriceLimit(value);
+    setResultPage(1);
   }
 
   function getRankLabel(index) {
-    if (index === 0) return "🥇 1위";
-    if (index === 1) return "🥈 2위";
-    if (index === 2) return "🥉 3위";
-    return `${index + 1}위`;
+    const realRank = (resultPage - 1) * ITEMS_PER_PAGE + index + 1;
+
+    if (realRank === 1) return "🥇 1위";
+    if (realRank === 2) return "🥈 2위";
+    if (realRank === 3) return "🥉 3위";
+
+    return `${realRank}위`;
   }
 
   return (
@@ -180,15 +211,15 @@ export default function Home() {
           <div className="brand">
             <div className="brandIcon">🍱</div>
             <div>
-              <strong>착한한끼 부산</strong>
-              <span>부산 착한가격업소 메뉴 가격 비교</span>
+              <strong>부산, 착한한끼</strong>
+              <span>공공데이터 기반 착한가격업소 메뉴 비교</span>
             </div>
           </div>
 
           <div className="headerTags">
-            <span>📍 지역 먼저 선택</span>
-            <span>💸 가격 낮은 순</span>
-            <span>🗺️ 지도 연결</span>
+            <span>📍 지역별</span>
+            <span>💰 가격순</span>
+            <span>🗺️ 지도연결</span>
           </div>
         </div>
       </header>
@@ -196,20 +227,16 @@ export default function Home() {
       <section className="heroWrap">
         <div className="heroCard">
           <div className="heroText">
-            <p className="eyebrow">공공데이터 기반 생활물가 비교 서비스</p>
-            <h1>
-              지역을 고르고,
-              <br />
-              착한 한 끼를 찾아보세요
-            </h1>
+            <p className="eyebrow">BUSAN GOOD PRICE MEAL</p>
+            <h1>부산, 착한한끼</h1>
             <p className="desc">
-              부산의 착한가격업소를 지역별로 먼저 확인하고,
-              원하는 메뉴를 선택하면 가장 저렴한 순서로 비교할 수 있어요.
+              지역을 먼저 고르고, 먹고 싶은 메뉴를 선택해보세요.
+              부산 착한가격업소 메뉴를 가격 낮은 순서로 비교할 수 있어요.
             </p>
 
             <div className="stepPanel">
               <div className="selectBox">
-                <label>1. 지역을 먼저 선택하세요</label>
+                <label>1. 지역 선택</label>
                 <select value={selectedDistrict} onChange={handleDistrictChange}>
                   {BUSAN_DISTRICTS.map((district) => (
                     <option key={district} value={district}>
@@ -220,7 +247,7 @@ export default function Home() {
               </div>
 
               <div className="searchBox">
-                <label>2. 먹고 싶은 메뉴를 선택하거나 검색하세요</label>
+                <label>2. 메뉴 선택 또는 검색</label>
                 <div className="searchRow">
                   <input
                     value={keyword}
@@ -249,30 +276,30 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="heroArt">
-            <div className="bubble one">🍜</div>
-            <div className="bubble two">☕</div>
-            <div className="bubble three">🍙</div>
-
-            <div className="infoCard mainInfo">
+          <div className="heroSide">
+            <div className="sideCard main">
               <span>선택 지역</span>
               <strong>{selectedDistrict}</strong>
               <p>착한가격업소 {storesByDistrict.length}곳</p>
             </div>
 
-            <div className="infoCard subInfo">
+            <div className="sideCard">
               <span>최저가</span>
               <strong>
-                {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "메뉴 검색"}
+                {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "메뉴 선택"}
               </strong>
             </div>
+
+            <div className="floatingEmoji one">🍜</div>
+            <div className="floatingEmoji two">☕</div>
+            <div className="floatingEmoji three">🍙</div>
           </div>
         </div>
       </section>
 
       <section className="summaryRow">
         <div className="summaryCard">
-          <span>📍 선택 지역</span>
+          <span>📍 지역</span>
           <strong>{selectedDistrict}</strong>
         </div>
         <div className="summaryCard">
@@ -280,8 +307,8 @@ export default function Home() {
           <strong>{storesByDistrict.length}곳</strong>
         </div>
         <div className="summaryCard">
-          <span>🍽️ 선택 메뉴</span>
-          <strong>{selectedKeyword || "아직 선택 전"}</strong>
+          <span>🍽️ 메뉴</span>
+          <strong>{selectedKeyword || "선택 전"}</strong>
         </div>
       </section>
 
@@ -307,54 +334,60 @@ export default function Home() {
             <div className="sectionTop">
               <div>
                 <p className="sectionLabel">GOOD PRICE STORES</p>
-                <h2>
-                  📍 {selectedDistrict} 착한가격업소
-                </h2>
+                <h2>📍 {selectedDistrict} 착한가격업소</h2>
                 <p className="sectionDesc">
-                  지역을 선택하면 해당 지역의 착한가격업소를 먼저 보여드려요.
-                  아래에는 최대 12개 업소가 표시됩니다.
+                  한 페이지에 12개씩 보여드려요. 다음 페이지를 눌러 더 볼 수 있어요.
                 </p>
               </div>
             </div>
 
-            {previewStores.length === 0 ? (
+            {pagedStores.length === 0 ? (
               <div className="stateBox">
                 <div className="stateEmoji">🔍</div>
                 <strong>해당 지역의 업소가 없어요</strong>
                 <p>다른 지역을 선택해보세요.</p>
               </div>
             ) : (
-              <div className="storeGrid">
-                {previewStores.map((store, index) => {
-                  const address = stripHtml(store?.adres);
-                  const mapQuery = encodeURIComponent(`${store?.sj} ${address}`);
+              <>
+                <div className="storeGrid">
+                  {pagedStores.map((store, index) => {
+                    const address = stripHtml(store?.adres);
+                    const mapQuery = encodeURIComponent(`${store?.sj} ${address}`);
 
-                  return (
-                    <div className="storeCard" key={`${store?.sj}-${index}`}>
-                      <div className="storeEmoji">{getStoreEmoji(store?.cn)}</div>
-                      <strong>{stripHtml(store?.sj)}</strong>
+                    return (
+                      <div className="storeCard" key={`${store?.sj}-${index}`}>
+                        <div className="storeEmoji">{getStoreEmoji(store?.cn)}</div>
+                        <strong>{stripHtml(store?.sj)}</strong>
 
-                      <div className="storeChips">
-                        {store?.cn && <span>{stripHtml(store.cn)}</span>}
-                        {store?.locale && <span>{stripHtml(store.locale)}</span>}
+                        <div className="storeChips">
+                          {store?.cn && <span>{stripHtml(store.cn)}</span>}
+                          {store?.locale && <span>{stripHtml(store.locale)}</span>}
+                        </div>
+
+                        {address && <p>{address}</p>}
+
+                        <div className="storeActions">
+                          <a
+                            href={`https://map.naver.com/p/search/${mapQuery}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            🗺️ 지도
+                          </a>
+                          {store?.tel && <a href={`tel:${store.tel}`}>📞 전화</a>}
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                      {address && <p>{address}</p>}
-
-                      <div className="storeActions">
-                        <a
-                          href={`https://map.naver.com/p/search/${mapQuery}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          🗺️ 지도
-                        </a>
-                        {store?.tel && <a href={`tel:${store.tel}`}>📞 전화</a>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                <Pagination
+                  page={storePage}
+                  totalPages={totalStorePages}
+                  onPrev={() => setStorePage((p) => Math.max(1, p - 1))}
+                  onNext={() => setStorePage((p) => Math.min(totalStorePages, p + 1))}
+                />
+              </>
             )}
           </>
         )}
@@ -368,32 +401,32 @@ export default function Home() {
                   {selectedDistrict} · {selectedKeyword} 가격 순위
                 </h2>
                 <p className="sectionDesc">
-                  선택한 지역 안에서 메뉴 가격이 낮은 순서로 보여드려요.
+                  선택한 지역 안에서 가격이 낮은 순서로 보여드려요.
                 </p>
               </div>
 
               <div className="filters">
                 <button
                   className={priceLimit === "all" ? "active" : ""}
-                  onClick={() => setPriceLimit("all")}
+                  onClick={() => handlePriceLimit("all")}
                 >
                   전체
                 </button>
                 <button
                   className={priceLimit === "5000" ? "active" : ""}
-                  onClick={() => setPriceLimit("5000")}
+                  onClick={() => handlePriceLimit("5000")}
                 >
                   5천원 이하
                 </button>
                 <button
                   className={priceLimit === "8000" ? "active" : ""}
-                  onClick={() => setPriceLimit("8000")}
+                  onClick={() => handlePriceLimit("8000")}
                 >
                   8천원 이하
                 </button>
                 <button
                   className={priceLimit === "10000" ? "active" : ""}
-                  onClick={() => setPriceLimit("10000")}
+                  onClick={() => handlePriceLimit("10000")}
                 >
                   1만원 이하
                 </button>
@@ -401,83 +434,98 @@ export default function Home() {
             </div>
 
             <div className="statsGrid">
-              <div className="statBox pink">
-                <span>📦 검색 결과</span>
-                <strong>{results.length}개</strong>
+              <div className="statBox coral">
+                <span>검색 결과</span>
+                <strong>{allResults.length}개</strong>
               </div>
               <div className="statBox mint">
-                <span>💰 최저가</span>
+                <span>최저가</span>
                 <strong>
                   {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "-"}
                 </strong>
               </div>
-              <div className="statBox yellow">
-                <span>📍 선택 지역</span>
-                <strong>{selectedDistrict}</strong>
+              <div className="statBox cream">
+                <span>현재 페이지</span>
+                <strong>
+                  {resultPage} / {totalResultPages}
+                </strong>
               </div>
             </div>
 
-            {results.length === 0 ? (
+            {pagedResults.length === 0 ? (
               <div className="stateBox">
                 <div className="stateEmoji">🔍</div>
                 <strong>검색 결과가 없어요</strong>
                 <p>다른 메뉴명이나 지역으로 다시 검색해보세요.</p>
               </div>
             ) : (
-              <div className="resultGrid">
-                {results.map((item, index) => {
-                  const store = item.store;
-                  const address = stripHtml(store?.adres);
-                  const mapQuery = encodeURIComponent(`${item.bsshNm} ${address}`);
+              <>
+                <div className="resultGrid">
+                  {pagedResults.map((item, index) => {
+                    const store = item.store;
+                    const address = stripHtml(store?.adres);
+                    const mapQuery = encodeURIComponent(`${item.bsshNm} ${address}`);
 
-                  return (
-                    <div
-                      className={index < 3 ? "resultCard topCard" : "resultCard"}
-                      key={`${item.bsshNm}-${item.itemNm}-${index}`}
-                    >
-                      <div className="rankCorner">{getRankLabel(index)}</div>
+                    return (
+                      <div
+                        className={
+                          (resultPage - 1) * ITEMS_PER_PAGE + index < 3
+                            ? "resultCard topCard"
+                            : "resultCard"
+                        }
+                        key={`${item.bsshNm}-${item.itemNm}-${index}`}
+                      >
+                        <div className="rankCorner">{getRankLabel(index)}</div>
 
-                      <div className="pricePill">
-                        {item.priceNumber.toLocaleString()}원
+                        <div className="pricePill">
+                          {item.priceNumber.toLocaleString()}원
+                        </div>
+
+                        <div className="menuIcon">
+                          {getMenuEmoji(item.itemNm)}
+                        </div>
+
+                        <div className="resultTitle">
+                          <strong>{stripHtml(item.bsshNm)}</strong>
+                          <em>{stripHtml(item.itemNm)}</em>
+                        </div>
+
+                        <div className="infoChips">
+                          {store?.locale && <span>📍 {stripHtml(store.locale)}</span>}
+                          {store?.bsnTime && <span>⏰ {stripHtml(store.bsnTime)}</span>}
+                          {store?.parkngAt && (
+                            <span>
+                              {store.parkngAt === "Y"
+                                ? "🚗 주차 가능"
+                                : "🚫 주차 정보 없음"}
+                            </span>
+                          )}
+                        </div>
+
+                        {address && <p className="addressText">{address}</p>}
+
+                        <div className="actionRow">
+                          <a
+                            href={`https://map.naver.com/p/search/${mapQuery}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            🗺️ 지도 보기
+                          </a>
+                          {store?.tel && <a href={`tel:${store.tel}`}>📞 전화</a>}
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                      <div className="menuIcon">
-                        {getMenuEmoji(item.itemNm)}
-                      </div>
-
-                      <div className="resultTitle">
-                        <strong>{stripHtml(item.bsshNm)}</strong>
-                        <em>{stripHtml(item.itemNm)}</em>
-                      </div>
-
-                      <div className="infoChips">
-                        {store?.locale && <span>📍 {stripHtml(store.locale)}</span>}
-                        {store?.bsnTime && <span>⏰ {stripHtml(store.bsnTime)}</span>}
-                        {store?.parkngAt && (
-                          <span>
-                            {store.parkngAt === "Y"
-                              ? "🚗 주차 가능"
-                              : "🚫 주차 정보 없음"}
-                          </span>
-                        )}
-                      </div>
-
-                      {address && <p className="addressText">{address}</p>}
-
-                      <div className="actionRow">
-                        <a
-                          href={`https://map.naver.com/p/search/${mapQuery}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          🗺️ 지도 보기
-                        </a>
-                        {store?.tel && <a href={`tel:${store.tel}`}>📞 전화</a>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                <Pagination
+                  page={resultPage}
+                  totalPages={totalResultPages}
+                  onPrev={() => setResultPage((p) => Math.max(1, p - 1))}
+                  onNext={() => setResultPage((p) => Math.min(totalResultPages, p + 1))}
+                />
+              </>
             )}
           </>
         )}
@@ -487,9 +535,9 @@ export default function Home() {
         .page {
           min-height: 100vh;
           background:
-            radial-gradient(circle at top left, rgba(255, 201, 214, 0.34), transparent 25%),
-            radial-gradient(circle at top right, rgba(186, 234, 232, 0.35), transparent 25%),
-            linear-gradient(180deg, #fffdf8 0%, #f8fbff 100%);
+            radial-gradient(circle at top left, rgba(255, 219, 207, 0.52), transparent 28%),
+            radial-gradient(circle at top right, rgba(198, 239, 234, 0.6), transparent 28%),
+            linear-gradient(180deg, #fffaf4 0%, #f7fbfb 52%, #fff8f1 100%);
           color: #24324a;
           font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
         }
@@ -498,15 +546,15 @@ export default function Home() {
           position: sticky;
           top: 0;
           z-index: 20;
-          backdrop-filter: blur(14px);
-          background: rgba(255, 255, 255, 0.82);
-          border-bottom: 1px solid rgba(227, 235, 242, 0.9);
+          backdrop-filter: blur(16px);
+          background: rgba(255, 250, 244, 0.82);
+          border-bottom: 1px solid rgba(230, 221, 211, 0.8);
         }
 
         .topInner {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 16px 24px;
+          padding: 15px 24px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -522,19 +570,19 @@ export default function Home() {
         .brandIcon {
           width: 46px;
           height: 46px;
-          border-radius: 18px;
-          background: linear-gradient(135deg, #ffb6b9, #ffd8a8);
+          border-radius: 17px;
+          background: linear-gradient(135deg, #ff8a7a, #ffd6a5);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 22px;
-          box-shadow: 0 12px 24px rgba(255, 182, 185, 0.35);
+          box-shadow: 0 12px 24px rgba(255, 138, 122, 0.24);
         }
 
         .brand strong {
           display: block;
-          color: #183b56;
-          font-size: 19px;
+          color: #17324d;
+          font-size: 20px;
           letter-spacing: -0.5px;
         }
 
@@ -553,8 +601,8 @@ export default function Home() {
 
         .headerTags span {
           background: #ffffff;
-          border: 1px solid #e7edf4;
-          color: #516173;
+          border: 1px solid #eadfd4;
+          color: #58677a;
           padding: 8px 12px;
           border-radius: 999px;
           font-size: 13px;
@@ -569,39 +617,39 @@ export default function Home() {
 
         .heroCard {
           display: grid;
-          grid-template-columns: 1.15fr 0.85fr;
+          grid-template-columns: 1.16fr 0.84fr;
           gap: 28px;
           align-items: center;
-          padding: 36px;
-          border-radius: 36px;
+          padding: 34px;
+          border-radius: 34px;
           background:
-            radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.55), transparent 30%),
-            linear-gradient(135deg, #c8f1ef 0%, #d9ecff 42%, #ffe6d8 100%);
-          border: 1px solid rgba(255, 255, 255, 0.75);
-          box-shadow: 0 24px 60px rgba(77, 104, 135, 0.12);
+            radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.7), transparent 26%),
+            linear-gradient(135deg, #fff4e8 0%, #e9fbf8 48%, #fff1ea 100%);
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 24px 62px rgba(86, 94, 110, 0.12);
           overflow: hidden;
         }
 
         .eyebrow {
           margin: 0 0 10px;
           color: #f26b5e;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 900;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.12em;
         }
 
         h1 {
           margin: 0;
-          color: #183b56;
-          font-size: clamp(34px, 5vw, 56px);
-          line-height: 1.15;
-          letter-spacing: -2px;
-          font-weight: 900;
+          color: #17324d;
+          font-size: clamp(42px, 6vw, 72px);
+          line-height: 1;
+          letter-spacing: -2.7px;
+          font-weight: 950;
         }
 
         .desc {
           margin: 18px 0 24px;
-          max-width: 640px;
+          max-width: 650px;
           color: #52616b;
           font-size: 17px;
           line-height: 1.7;
@@ -609,12 +657,13 @@ export default function Home() {
 
         .stepPanel {
           display: grid;
-          grid-template-columns: 0.9fr 1.1fr;
+          grid-template-columns: 0.92fr 1.08fr;
           gap: 14px;
-          background: rgba(255, 255, 255, 0.72);
-          border: 1px solid rgba(255, 255, 255, 0.9);
-          border-radius: 28px;
+          background: rgba(255, 255, 255, 0.76);
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          border-radius: 26px;
           padding: 16px;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
         }
 
         .selectBox label,
@@ -634,22 +683,22 @@ export default function Home() {
           background: #ffffff;
           color: #24324a;
           padding: 15px 16px;
-          border-radius: 17px;
+          border-radius: 16px;
           font-size: 15px;
-          box-shadow: inset 0 0 0 1px #e7edf4;
+          box-shadow: inset 0 0 0 1px #eadfd4;
         }
 
         .searchRow {
           display: grid;
-          grid-template-columns: 1fr 86px;
+          grid-template-columns: 1fr 84px;
           gap: 8px;
         }
 
         .searchRow button {
           border: none;
-          background: linear-gradient(135deg, #183b56, #2d587d);
+          background: #17324d;
           color: #ffffff;
-          border-radius: 17px;
+          border-radius: 16px;
           font-size: 15px;
           font-weight: 900;
           cursor: pointer;
@@ -663,14 +712,14 @@ export default function Home() {
         }
 
         .quickMenus button {
-          border: 1px solid #dceaf0;
-          background: rgba(255, 255, 255, 0.85);
-          color: #183b56;
+          border: 1px solid #eadfd4;
+          background: #ffffff;
+          color: #17324d;
           border-radius: 999px;
           padding: 10px 14px;
           font-weight: 900;
           cursor: pointer;
-          box-shadow: 0 6px 16px rgba(24, 59, 86, 0.05);
+          box-shadow: 0 7px 17px rgba(86, 94, 110, 0.06);
         }
 
         .quickMenus button span {
@@ -679,87 +728,88 @@ export default function Home() {
 
         .quickMenus button.selected,
         .quickMenus button:hover {
-          background: linear-gradient(135deg, #ffdce2, #ffffff);
-          border-color: #f6b4bf;
+          background: #fff0eb;
+          border-color: #ffb3a8;
+          color: #e85d50;
         }
 
-        .heroArt {
+        .heroSide {
           position: relative;
-          min-height: 310px;
+          min-height: 285px;
         }
 
-        .bubble {
+        .sideCard {
           position: absolute;
-          width: 74px;
-          height: 74px;
-          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          border-radius: 28px;
+          padding: 22px;
+          box-shadow: 0 18px 40px rgba(86, 94, 110, 0.14);
+        }
+
+        .sideCard.main {
+          top: 24px;
+          right: 30px;
+          width: 245px;
+        }
+
+        .sideCard:not(.main) {
+          bottom: 28px;
+          left: 52px;
+          width: 210px;
+        }
+
+        .sideCard span {
+          display: block;
+          color: #7b8794;
+          font-size: 13px;
+          font-weight: 800;
+          margin-bottom: 8px;
+        }
+
+        .sideCard strong {
+          display: block;
+          color: #17324d;
+          font-size: 25px;
+          margin-bottom: 8px;
+        }
+
+        .sideCard p {
+          margin: 0;
+          color: #f26b5e;
+          font-size: 17px;
+          font-weight: 900;
+        }
+
+        .floatingEmoji {
+          position: absolute;
+          width: 62px;
+          height: 62px;
+          border-radius: 22px;
           background: rgba(255, 255, 255, 0.78);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 32px;
-          box-shadow: 0 16px 30px rgba(92, 113, 137, 0.12);
+          font-size: 28px;
+          box-shadow: 0 14px 28px rgba(86, 94, 110, 0.12);
         }
 
-        .one {
-          top: 22px;
-          left: 18px;
+        .floatingEmoji.one {
+          top: 8px;
+          left: 20px;
           transform: rotate(-8deg);
         }
 
-        .two {
-          top: 110px;
-          right: 30px;
-          transform: rotate(8deg);
+        .floatingEmoji.two {
+          top: 120px;
+          right: 4px;
+          transform: rotate(7deg);
         }
 
-        .three {
-          bottom: 20px;
-          left: 54px;
+        .floatingEmoji.three {
+          bottom: 4px;
+          left: 12px;
           transform: rotate(-6deg);
-        }
-
-        .infoCard {
-          position: absolute;
-          background: rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          border-radius: 30px;
-          padding: 24px 22px;
-          box-shadow: 0 20px 40px rgba(86, 107, 134, 0.15);
-        }
-
-        .mainInfo {
-          right: 34px;
-          top: 26px;
-          width: 250px;
-        }
-
-        .subInfo {
-          left: 72px;
-          bottom: 28px;
-          width: 210px;
-        }
-
-        .infoCard span {
-          display: block;
-          color: #7b8794;
-          font-size: 13px;
-          margin-bottom: 8px;
-          font-weight: 800;
-        }
-
-        .infoCard strong {
-          display: block;
-          color: #183b56;
-          font-size: 24px;
-          margin-bottom: 8px;
-        }
-
-        .infoCard p {
-          margin: 0;
-          color: #f26b5e;
-          font-size: 18px;
-          font-weight: 900;
         }
 
         .summaryRow {
@@ -772,11 +822,11 @@ export default function Home() {
         }
 
         .summaryCard {
-          background: rgba(255, 255, 255, 0.86);
-          border: 1px solid #e7edf4;
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #eadfd4;
           border-radius: 22px;
           padding: 18px 20px;
-          box-shadow: 0 14px 30px rgba(24, 59, 86, 0.06);
+          box-shadow: 0 13px 30px rgba(86, 94, 110, 0.07);
         }
 
         .summaryCard span {
@@ -787,7 +837,7 @@ export default function Home() {
         }
 
         .summaryCard strong {
-          color: #183b56;
+          color: #17324d;
           font-size: 18px;
         }
 
@@ -815,7 +865,7 @@ export default function Home() {
 
         h2 {
           margin: 0;
-          color: #183b56;
+          color: #17324d;
           font-size: 32px;
           letter-spacing: -1px;
         }
@@ -834,29 +884,29 @@ export default function Home() {
         }
 
         .filters button {
-          border: 1px solid #dce7ef;
+          border: 1px solid #eadfd4;
           background: #ffffff;
           color: #52616b;
           border-radius: 999px;
           padding: 10px 14px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 6px 16px rgba(24, 59, 86, 0.04);
+          box-shadow: 0 6px 16px rgba(86, 94, 110, 0.04);
         }
 
         .filters button.active {
-          background: linear-gradient(135deg, #183b56, #345b7c);
+          background: #17324d;
           color: white;
-          border-color: #183b56;
+          border-color: #17324d;
         }
 
         .stateBox {
           background: rgba(255, 255, 255, 0.92);
-          border: 1px solid #e7edf4;
+          border: 1px solid #eadfd4;
           border-radius: 30px;
           padding: 54px 28px;
           text-align: center;
-          box-shadow: 0 18px 40px rgba(24, 59, 86, 0.07);
+          box-shadow: 0 18px 40px rgba(86, 94, 110, 0.07);
         }
 
         .stateEmoji {
@@ -866,7 +916,7 @@ export default function Home() {
 
         .stateBox strong {
           display: block;
-          color: #183b56;
+          color: #17324d;
           font-size: 24px;
           margin-bottom: 10px;
         }
@@ -886,11 +936,11 @@ export default function Home() {
         .storeCard,
         .resultCard {
           position: relative;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid #e7edf4;
+          background: rgba(255, 255, 255, 0.94);
+          border: 1px solid #eadfd4;
           border-radius: 28px;
           padding: 22px;
-          box-shadow: 0 16px 34px rgba(24, 59, 86, 0.06);
+          box-shadow: 0 15px 34px rgba(86, 94, 110, 0.06);
           transition: 0.18s ease;
           overflow: hidden;
         }
@@ -898,7 +948,7 @@ export default function Home() {
         .storeCard:hover,
         .resultCard:hover {
           transform: translateY(-3px);
-          box-shadow: 0 22px 42px rgba(24, 59, 86, 0.1);
+          box-shadow: 0 22px 42px rgba(86, 94, 110, 0.1);
         }
 
         .storeEmoji,
@@ -906,7 +956,7 @@ export default function Home() {
           width: 54px;
           height: 54px;
           border-radius: 20px;
-          background: linear-gradient(135deg, #dff7f6, #ffe9df);
+          background: linear-gradient(135deg, #e4fbf4, #fff0e8);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -917,7 +967,7 @@ export default function Home() {
         .storeCard strong,
         .resultTitle strong {
           display: block;
-          color: #183b56;
+          color: #17324d;
           font-size: 20px;
           margin-bottom: 8px;
           letter-spacing: -0.4px;
@@ -933,8 +983,8 @@ export default function Home() {
 
         .storeChips span,
         .infoChips span {
-          background: #f3f8fb;
-          color: #556474;
+          background: #fff7f0;
+          color: #5b6570;
           border-radius: 999px;
           padding: 7px 10px;
           font-size: 13px;
@@ -960,8 +1010,8 @@ export default function Home() {
         .storeActions a,
         .actionRow a {
           text-decoration: none;
-          background: #eaf6fa;
-          color: #183b56;
+          background: #e9f8f4;
+          color: #17324d;
           border-radius: 999px;
           padding: 10px 12px;
           font-size: 13px;
@@ -970,7 +1020,7 @@ export default function Home() {
 
         .storeActions a:hover,
         .actionRow a:hover {
-          background: #183b56;
+          background: #17324d;
           color: white;
         }
 
@@ -984,8 +1034,8 @@ export default function Home() {
         .statBox {
           border-radius: 24px;
           padding: 22px;
-          box-shadow: 0 14px 30px rgba(24, 59, 86, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.85);
+          box-shadow: 0 14px 30px rgba(86, 94, 110, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.9);
         }
 
         .statBox span {
@@ -998,24 +1048,24 @@ export default function Home() {
 
         .statBox strong {
           font-size: 26px;
-          color: #183b56;
+          color: #17324d;
         }
 
-        .pink {
-          background: linear-gradient(135deg, #fff0f2, #ffffff);
+        .coral {
+          background: linear-gradient(135deg, #fff0eb, #ffffff);
         }
 
         .mint {
-          background: linear-gradient(135deg, #effcf9, #ffffff);
+          background: linear-gradient(135deg, #e9fbf7, #ffffff);
         }
 
-        .yellow {
-          background: linear-gradient(135deg, #fff8e7, #ffffff);
+        .cream {
+          background: linear-gradient(135deg, #fff8e9, #ffffff);
         }
 
         .topCard {
-          background: linear-gradient(135deg, #fff8f4, #ffffff);
-          border-color: #ffd7c8;
+          background: linear-gradient(135deg, #fff4eb, #ffffff);
+          border-color: #ffc8b8;
         }
 
         .rankCorner {
@@ -1028,14 +1078,14 @@ export default function Home() {
           border-bottom-right-radius: 20px;
           font-size: 14px;
           font-weight: 900;
-          box-shadow: 0 10px 24px rgba(242, 107, 94, 0.24);
+          box-shadow: 0 10px 24px rgba(242, 107, 94, 0.22);
         }
 
         .pricePill {
           position: absolute;
           top: 18px;
           right: 18px;
-          background: #183b56;
+          background: #17324d;
           color: white;
           padding: 9px 14px;
           border-radius: 999px;
@@ -1054,12 +1104,40 @@ export default function Home() {
           font-weight: 900;
         }
 
+        .pagination {
+          margin-top: 24px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .pagination button {
+          border: none;
+          background: #17324d;
+          color: white;
+          border-radius: 999px;
+          padding: 11px 18px;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .pagination button:disabled {
+          background: #d7dce2;
+          cursor: not-allowed;
+        }
+
+        .pagination span {
+          color: #52616b;
+          font-weight: 900;
+        }
+
         @media (max-width: 960px) {
           .heroCard {
             grid-template-columns: 1fr;
           }
 
-          .heroArt {
+          .heroSide {
             display: none;
           }
 
@@ -1118,7 +1196,7 @@ export default function Home() {
           }
 
           h1 {
-            font-size: 34px;
+            font-size: 46px;
           }
 
           h2 {
@@ -1127,6 +1205,22 @@ export default function Home() {
         }
       `}</style>
     </main>
+  );
+}
+
+function Pagination({ page, totalPages, onPrev, onNext }) {
+  return (
+    <div className="pagination">
+      <button onClick={onPrev} disabled={page <= 1}>
+        ← 이전
+      </button>
+      <span>
+        {page} / {totalPages}
+      </span>
+      <button onClick={onNext} disabled={page >= totalPages}>
+        다음 →
+      </button>
+    </div>
   );
 }
 
