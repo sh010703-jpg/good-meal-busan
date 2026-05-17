@@ -228,7 +228,13 @@ export default function Home() {
         <div className="heroCard">
           <div className="heroText">
             <p className="eyebrow">BUSAN GOOD PRICE MEAL</p>
-            <h1>부산, 착한한끼</h1>
+
+            <h1 className="mainTitle">
+              <span className="titleBusan">부산,</span>{" "}
+              <span className="titleGood">착한</span>
+              <span className="titleMeal">한끼</span>
+            </h1>
+
             <p className="desc">
               지역을 먼저 고르고, 먹고 싶은 메뉴를 선택해보세요.
               부산 착한가격업소 메뉴를 가격 낮은 순서로 비교할 수 있어요.
@@ -640,13 +646,24 @@ export default function Home() {
           letter-spacing: 0.12em;
         }
 
-        h1 {
+        .mainTitle {
           margin: 0;
-          color: #17324d;
           font-size: clamp(46px, 7vw, 82px);
           line-height: 1;
           letter-spacing: -3px;
           font-weight: 950;
+        }
+
+        .titleBusan {
+          color: #17324d;
+        }
+
+        .titleGood {
+          color: #f26b5e;
+        }
+
+        .titleMeal {
+          color: #1f8a70;
         }
 
         .desc {
@@ -1103,7 +1120,7 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          h1 {
+          .mainTitle {
             font-size: 48px;
           }
 
