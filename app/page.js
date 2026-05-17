@@ -1048,88 +1048,6 @@ export default function Home() {
           font-weight: 900;
         }
 
-        .paginationWrap {
-          display: flex;
-          justify-content: center;
-          margin-top: 34px;
-        }
-
-        .pagination {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 18px;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid #eadfd4;
-          border-radius: 999px;
-          padding: 14px 18px;
-          box-shadow: 0 14px 32px rgba(86, 94, 110, 0.1);
-        }
-
-        .pageBtn {
-          border: none;
-          background: linear-gradient(135deg, #17324d, #27496b);
-          color: #ffffff;
-          border-radius: 999px;
-          padding: 14px 24px;
-          font-size: 16px;
-          font-weight: 900;
-          cursor: pointer;
-          min-width: 110px;
-          transition: all 0.2s ease;
-          box-shadow: 0 8px 18px rgba(23, 50, 77, 0.18);
-        }
-
-        .pageBtn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 22px rgba(23, 50, 77, 0.22);
-        }
-
-        .pageBtn:disabled {
-          background: #d7dce2;
-          color: #8b97a3;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-
-        .pageIndicator {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          min-width: 120px;
-          padding: 10px 18px;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #fff4eb, #ffffff);
-          border: 1px solid #f2d4c8;
-        }
-
-        .currentPage {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #ff8a7a, #f26b5e);
-          color: #ffffff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          font-weight: 900;
-          box-shadow: 0 8px 18px rgba(242, 107, 94, 0.24);
-        }
-
-        .pageSlash {
-          color: #97a2ad;
-          font-size: 18px;
-          font-weight: 800;
-        }
-
-        .totalPage {
-          color: #17324d;
-          font-size: 18px;
-          font-weight: 900;
-        }
-
         @media (max-width: 960px) {
           .stepPanel {
             grid-template-columns: 1fr;
@@ -1197,34 +1115,6 @@ export default function Home() {
           .resultPhoto {
             height: 180px;
           }
-
-          .pagination {
-            gap: 10px;
-            padding: 12px 12px;
-            flex-wrap: wrap;
-          }
-
-          .pageBtn {
-            min-width: 96px;
-            padding: 12px 18px;
-            font-size: 15px;
-          }
-
-          .pageIndicator {
-            min-width: 100px;
-            padding: 8px 14px;
-          }
-
-          .currentPage {
-            width: 36px;
-            height: 36px;
-            font-size: 16px;
-          }
-
-          .totalPage,
-          .pageSlash {
-            font-size: 16px;
-          }
         }
       `}</style>
     </main>
@@ -1233,19 +1123,127 @@ export default function Home() {
 
 function Pagination({ page, totalPages, onPrev, onNext }) {
   return (
-    <div className="paginationWrap">
-      <div className="pagination">
-        <button className="pageBtn" onClick={onPrev} disabled={page <= 1}>
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "38px",
+        marginBottom: "20px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "18px",
+          padding: "16px 20px",
+          borderRadius: "999px",
+          background: "rgba(255, 255, 255, 0.95)",
+          border: "1px solid #eadfd4",
+          boxShadow: "0 16px 36px rgba(86, 94, 110, 0.14)",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          onClick={onPrev}
+          disabled={page <= 1}
+          style={{
+            border: "none",
+            borderRadius: "999px",
+            padding: "14px 24px",
+            minWidth: "112px",
+            background:
+              page <= 1
+                ? "#d7dce2"
+                : "linear-gradient(135deg, #17324d, #27496b)",
+            color: page <= 1 ? "#8b97a3" : "#ffffff",
+            fontSize: "16px",
+            fontWeight: "900",
+            cursor: page <= 1 ? "not-allowed" : "pointer",
+            boxShadow:
+              page <= 1 ? "none" : "0 8px 18px rgba(23, 50, 77, 0.18)",
+          }}
+        >
           ← 이전
         </button>
 
-        <div className="pageIndicator">
-          <span className="currentPage">{page}</span>
-          <span className="pageSlash">/</span>
-          <span className="totalPage">{totalPages}</span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "9px",
+            padding: "10px 18px",
+            borderRadius: "999px",
+            background: "linear-gradient(135deg, #fff4eb, #ffffff)",
+            border: "1px solid #f2d4c8",
+            minWidth: "126px",
+            justifyContent: "center",
+          }}
+        >
+          <span
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #ff8a7a, #f26b5e)",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "18px",
+              fontWeight: "900",
+              boxShadow: "0 8px 18px rgba(242, 107, 94, 0.24)",
+            }}
+          >
+            {page}
+          </span>
+
+          <span
+            style={{
+              color: "#97a2ad",
+              fontSize: "18px",
+              fontWeight: "900",
+            }}
+          >
+            /
+          </span>
+
+          <span
+            style={{
+              color: "#17324d",
+              fontSize: "18px",
+              fontWeight: "900",
+            }}
+          >
+            {totalPages}
+          </span>
         </div>
 
-        <button className="pageBtn" onClick={onNext} disabled={page >= totalPages}>
+        <button
+          onClick={onNext}
+          disabled={page >= totalPages}
+          style={{
+            border: "none",
+            borderRadius: "999px",
+            padding: "14px 24px",
+            minWidth: "112px",
+            background:
+              page >= totalPages
+                ? "#d7dce2"
+                : "linear-gradient(135deg, #17324d, #27496b)",
+            color: page >= totalPages ? "#8b97a3" : "#ffffff",
+            fontSize: "16px",
+            fontWeight: "900",
+            cursor: page >= totalPages ? "not-allowed" : "pointer",
+            boxShadow:
+              page >= totalPages
+                ? "none"
+                : "0 8px 18px rgba(23, 50, 77, 0.18)",
+          }}
+        >
           다음 →
         </button>
       </div>
