@@ -7,6 +7,7 @@ export default function Home() {
   const [stores, setStores] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [selectedKeyword, setSelectedKeyword] = useState("");
+  const [selectedLocale, setSelectedLocale] = useState("전체");
   const [priceLimit, setPriceLimit] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,12 +16,12 @@ export default function Home() {
   const storeKey = process.env.NEXT_PUBLIC_GOOD_PRICE_STORE_KEY;
 
   const quickMenus = [
-    { name: "국밥", icon: "🥘" },
+    { name: "국밥", icon: "🍲" },
     { name: "김밥", icon: "🍙" },
     { name: "짜장면", icon: "🍜" },
     { name: "커피", icon: "☕" },
     { name: "백반", icon: "🍚" },
-    { name: "칼국수", icon: "🥣" },
+    { name: "칼국수", icon: "🥢" },
     { name: "돈가스", icon: "🍛" },
     { name: "냉면", icon: "🧊" },
   ];
@@ -73,14 +74,20 @@ export default function Home() {
 
   const storeMap = useMemo(() => {
     const map = new Map();
-
     stores.forEach((store) => {
       if (store?.sj) {
         map.set(cleanText(store.sj), store);
       }
     });
-
     return map;
+  }, [stores]);
+
+  const localeOptions = useMemo(() => {
+    const locales = stores
+      .map((store) => stripHtml(store?.locale))
+      .filter(Boolean);
+
+    return ["전체", ...Array.from(new Set(locales)).sort((a, b) => a.localeCompare(b, "ko"))];
   }, [stores]);
 
   const results = useMemo(() => {
@@ -89,7 +96,6 @@ export default function Home() {
     return menus
       .map((menu) => {
         const store = storeMap.get(cleanText(menu.bsshNm));
-
         return {
           ...menu,
           store,
@@ -106,12 +112,16 @@ export default function Home() {
         return itemName.includes(word) || storeName.includes(word);
       })
       .filter((item) => {
+        if (selectedLocale === "전체") return true;
+        return stripHtml(item.store?.locale) === selectedLocale;
+      })
+      .filter((item) => {
         if (priceLimit === "all") return true;
         return item.priceNumber <= Number(priceLimit);
       })
       .sort((a, b) => a.priceNumber - b.priceNumber)
-      .slice(0, 80);
-  }, [menus, selectedKeyword, priceLimit, storeMap]);
+      .slice(0, 60);
+  }, [menus, selectedKeyword, selectedLocale, priceLimit, storeMap]);
 
   const cheapest = results[0];
 
@@ -124,50 +134,80 @@ export default function Home() {
     setSelectedKeyword(word);
   }
 
+  function getRankEmoji(index) {
+    if (index === 0) return "🥇";
+    if (index === 1) return "🥈";
+    if (index === 2) return "🥉";
+    return "🍽️";
+  }
+
   return (
     <main className="page">
       <header className="topBar">
         <div className="topInner">
           <div className="brand">
-            <div className="brandIcon">한</div>
+            <div className="brandIcon">🍚</div>
             <div>
               <strong>착한한끼 부산</strong>
-              <span>Busan Good Price Meal</span>
+              <span>부산 착한가격업소 메뉴 가격 비교</span>
             </div>
           </div>
 
-          <nav>
-            <span>공공데이터</span>
-            <span>가격비교</span>
-            <span>지도연결</span>
-          </nav>
+          <div className="headerTags">
+            <span>📍 부산</span>
+            <span>💸 가격비교</span>
+            <span>🗺️ 지도연결</span>
+          </div>
         </div>
       </header>
 
       <section className="heroWrap">
         <div className="heroCard">
           <div className="heroText">
-            <p className="eyebrow">PUBLIC DATA SERVICE</p>
+            <p className="eyebrow">공공데이터 기반 생활물가 비교 서비스</p>
             <h1>
-              부산의 착한 한 끼,
+              🍱 오늘의 착한 한 끼,
               <br />
-              가격부터 비교하세요
+              가격부터 비교해보세요
             </h1>
             <p className="desc">
-              부산 착한가격업소 메뉴 정보를 공공데이터로 불러와
-              원하는 메뉴를 가격 낮은 순으로 보여드립니다.
+              부산 착한가격업소의 메뉴 가격을 검색하고,
+              지역별로 골라보며 가장 저렴한 한 끼를 찾아보세요.
             </p>
 
-            <div className="searchBox">
-              <input
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSearch();
-                }}
-                placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
-              />
-              <button onClick={handleSearch}>검색</button>
+            <div className="searchPanel">
+              <div className="searchBox">
+                <input
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
+                  placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
+                />
+                <button onClick={handleSearch}>검색</button>
+              </div>
+
+              <div className="optionRow">
+                <div className="selectWrap">
+                  <label>📍 지역 선택</label>
+                  <select
+                    value={selectedLocale}
+                    onChange={(e) => setSelectedLocale(e.target.value)}
+                  >
+                    {localeOptions.map((locale) => (
+                      <option key={locale} value={locale}>
+                        {locale}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="cuteBadgeWrap">
+                  <span className="cuteBadge">💡 가격 낮은 순</span>
+                  <span className="cuteBadge">🌊 부산 착한가격업소</span>
+                </div>
+              </div>
             </div>
 
             <div className="quickMenus">
@@ -185,36 +225,41 @@ export default function Home() {
           </div>
 
           <div className="heroArt">
-            <div className="sun"></div>
-            <div className="plate">
-              <div className="bowl">🍚</div>
-              <strong>오늘의 알뜰 메뉴</strong>
+            <div className="artBubble bubble1">🍜</div>
+            <div className="artBubble bubble2">☕</div>
+            <div className="artBubble bubble3">🍙</div>
+
+            <div className="miniCard">
+              <div className="miniCardIcon">💸</div>
+              <strong>오늘의 최저가</strong>
               <span>
                 {cheapest
-                  ? `${cheapest.priceNumber.toLocaleString()}원부터`
-                  : "가격 비교 준비 완료"}
+                  ? `${cheapest.priceNumber.toLocaleString()}원`
+                  : "검색해보세요"}
               </span>
             </div>
-            <div className="wave waveOne"></div>
-            <div className="wave waveTwo"></div>
-            <div className="miniBadge badgeOne">가격 낮은 순</div>
-            <div className="miniBadge badgeTwo">부산 착한가격업소</div>
+
+            <div className="miniCard second">
+              <div className="miniCardIcon">📍</div>
+              <strong>선택 지역</strong>
+              <span>{selectedLocale}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="infoStrip">
-        <div>
-          <span>데이터</span>
-          <strong>부산 착한가격업소</strong>
+      <section className="summaryRow">
+        <div className="summaryCard">
+          <span>🔎 검색 기준</span>
+          <strong>{selectedKeyword || "메뉴를 검색해보세요"}</strong>
         </div>
-        <div>
-          <span>검색</span>
-          <strong>메뉴명 · 업소명</strong>
+        <div className="summaryCard">
+          <span>📍 지역</span>
+          <strong>{selectedLocale}</strong>
         </div>
-        <div>
-          <span>정렬</span>
-          <strong>가격 낮은 순</strong>
+        <div className="summaryCard">
+          <span>💰 최저가</span>
+          <strong>{cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "-"}</strong>
         </div>
       </section>
 
@@ -222,7 +267,7 @@ export default function Home() {
         <div className="contentTop">
           <div>
             <p className="sectionLabel">PRICE RANKING</p>
-            <h2>{selectedKeyword ? `${selectedKeyword} 검색 결과` : "메뉴를 검색해보세요"}</h2>
+            <h2>{selectedKeyword ? `🍽️ ${selectedKeyword} 검색 결과` : "메뉴를 검색해보세요"}</h2>
           </div>
 
           <div className="filters">
@@ -255,67 +300,65 @@ export default function Home() {
 
         {loading && (
           <div className="stateBox">
-            <div className="stateIcon">🌊</div>
-            <strong>착한가격 메뉴를 불러오는 중입니다</strong>
-            <p>잠시만 기다려주세요.</p>
+            <div className="stateEmoji">🐣</div>
+            <strong>메뉴 정보를 불러오는 중이에요</strong>
+            <p>조금만 기다려주세요!</p>
           </div>
         )}
 
         {error && (
           <div className="stateBox">
-            <div className="stateIcon">!</div>
-            <strong>확인이 필요합니다</strong>
+            <div className="stateEmoji">😢</div>
+            <strong>확인이 필요해요</strong>
             <p>{error}</p>
           </div>
         )}
 
         {!loading && !error && !selectedKeyword && (
           <div className="guideGrid">
-            <div>
-              <span>01</span>
+            <div className="guideCard">
+              <div className="guideIcon">🍚</div>
               <strong>메뉴 검색</strong>
               <p>국밥, 김밥, 커피처럼 원하는 메뉴를 입력해보세요.</p>
             </div>
-            <div>
-              <span>02</span>
+            <div className="guideCard">
+              <div className="guideIcon">💸</div>
               <strong>가격 비교</strong>
-              <p>착한가격업소 메뉴를 낮은 가격순으로 확인할 수 있어요.</p>
+              <p>검색 결과를 가격 낮은 순으로 편하게 비교할 수 있어요.</p>
             </div>
-            <div>
-              <span>03</span>
+            <div className="guideCard">
+              <div className="guideIcon">🗺️</div>
               <strong>위치 확인</strong>
-              <p>지도 보기 버튼으로 업소 위치를 바로 확인할 수 있어요.</p>
+              <p>지도 보기 버튼으로 업소 위치도 바로 확인할 수 있어요.</p>
             </div>
           </div>
         )}
 
         {!loading && !error && selectedKeyword && (
           <>
-            <div className="stats">
-              <div className="statCard">
-                <span>검색 결과</span>
+            <div className="statsGrid">
+              <div className="statBox pink">
+                <span>📦 검색 결과</span>
                 <strong>{results.length}개</strong>
               </div>
-              <div className="statCard">
-                <span>최저가</span>
-                <strong className="priceText">
-                  {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "-"}
-                </strong>
+              <div className="statBox mint">
+                <span>💰 최저가</span>
+                <strong>{cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "-"}</strong>
               </div>
-              <div className="statCard wide">
-                <span>검색 기준</span>
-                <strong>{selectedKeyword} · 가격 낮은 순</strong>
+              <div className="statBox yellow">
+                <span>📍 선택 지역</span>
+                <strong>{selectedLocale}</strong>
               </div>
             </div>
 
             {results.length === 0 ? (
               <div className="stateBox">
-                <div className="stateIcon">🔎</div>
-                <strong>검색 결과가 없습니다</strong>
-                <p>다른 메뉴명으로 검색해보세요.</p>
+                <div className="stateEmoji">🔍</div>
+                <strong>검색 결과가 없어요</strong>
+                <p>다른 메뉴명이나 지역으로 다시 검색해보세요.</p>
               </div>
             ) : (
-              <div className="rankingList">
+              <div className="resultGrid">
                 {results.map((item, index) => {
                   const store = item.store;
                   const address = store?.adres || "";
@@ -323,42 +366,44 @@ export default function Home() {
 
                   return (
                     <div
-                      className={index < 3 ? "rankItem topRank" : "rankItem"}
+                      className={index < 3 ? "resultCard topCard" : "resultCard"}
                       key={`${item.bsshNm}-${item.itemNm}-${index}`}
                     >
-                      <div className="rankNum">
-                        {index + 1}
+                      <div className="cardTop">
+                        <div className="rankBadge">
+                          <span>{getRankEmoji(index)}</span>
+                          <strong>{index + 1}</strong>
+                        </div>
+
+                        <div className="priceBadge">
+                          {item.priceNumber.toLocaleString()}원
+                        </div>
                       </div>
 
-                      <div className="rankMain">
-                        <div className="titleLine">
-                          <strong>{item.bsshNm}</strong>
-                          <em>{item.itemNm}</em>
-                        </div>
-
-                        <div className="metaLine">
-                          {store?.locale && <span>{store.locale}</span>}
-                          {store?.bsnTime && <span>{stripHtml(store.bsnTime)}</span>}
-                          {store?.parkngAt && (
-                            <span>{store.parkngAt === "Y" ? "주차 가능" : "주차 정보 없음"}</span>
-                          )}
-                        </div>
-
-                        {address && <p>{stripHtml(address)}</p>}
+                      <div className="storeTitle">
+                        <strong>{item.bsshNm}</strong>
+                        <em>{item.itemNm}</em>
                       </div>
 
-                      <div className="rankSide">
-                        <strong>{item.priceNumber.toLocaleString()}원</strong>
-                        <div className="actions">
-                          <a
-                            href={`https://map.naver.com/p/search/${mapQuery}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            지도 보기
-                          </a>
-                          {store?.tel && <a href={`tel:${store.tel}`}>전화</a>}
-                        </div>
+                      <div className="infoChips">
+                        {store?.locale && <span>📍 {stripHtml(store.locale)}</span>}
+                        {store?.bsnTime && <span>⏰ {stripHtml(store.bsnTime)}</span>}
+                        {store?.parkngAt && (
+                          <span>{store.parkngAt === "Y" ? "🚗 주차 가능" : "🚫 주차 정보 없음"}</span>
+                        )}
+                      </div>
+
+                      {address && <p className="addressText">{stripHtml(address)}</p>}
+
+                      <div className="actionRow">
+                        <a
+                          href={`https://map.naver.com/p/search/${mapQuery}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          🗺️ 지도 보기
+                        </a>
+                        {store?.tel && <a href={`tel:${store.tel}`}>📞 전화</a>}
                       </div>
                     </div>
                   );
@@ -373,20 +418,20 @@ export default function Home() {
         .page {
           min-height: 100vh;
           background:
-            radial-gradient(circle at top left, rgba(113, 201, 206, 0.22), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(242, 107, 94, 0.14), transparent 28%),
-            #f6fbfd;
-          color: #1f2933;
+            radial-gradient(circle at top left, rgba(255, 201, 214, 0.35), transparent 24%),
+            radial-gradient(circle at top right, rgba(183, 232, 230, 0.35), transparent 24%),
+            linear-gradient(180deg, #fffdf8 0%, #f8fbff 100%);
+          color: #24324a;
           font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
         }
 
         .topBar {
-          background: rgba(255, 255, 255, 0.82);
-          backdrop-filter: blur(18px);
-          border-bottom: 1px solid rgba(218, 232, 238, 0.8);
           position: sticky;
           top: 0;
           z-index: 20;
+          backdrop-filter: blur(14px);
+          background: rgba(255, 255, 255, 0.78);
+          border-bottom: 1px solid rgba(227, 235, 242, 0.9);
         }
 
         .topInner {
@@ -396,6 +441,7 @@ export default function Home() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 16px;
         }
 
         .brand {
@@ -405,22 +451,21 @@ export default function Home() {
         }
 
         .brandIcon {
-          width: 42px;
-          height: 42px;
-          border-radius: 16px;
-          background: linear-gradient(135deg, #183b56, #1f6f5b);
-          color: white;
+          width: 46px;
+          height: 46px;
+          border-radius: 18px;
+          background: linear-gradient(135deg, #ffb6b9, #ffd8a8);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 900;
-          box-shadow: 0 12px 24px rgba(24, 59, 86, 0.22);
+          font-size: 22px;
+          box-shadow: 0 12px 24px rgba(255, 182, 185, 0.35);
         }
 
         .brand strong {
           display: block;
           color: #183b56;
-          font-size: 18px;
+          font-size: 19px;
           letter-spacing: -0.5px;
         }
 
@@ -431,275 +476,291 @@ export default function Home() {
           font-size: 12px;
         }
 
-        nav {
+        .headerTags {
           display: flex;
-          gap: 22px;
-          color: #52616b;
-          font-size: 14px;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .headerTags span {
+          background: #ffffff;
+          border: 1px solid #e7edf4;
+          color: #516173;
+          padding: 8px 12px;
+          border-radius: 999px;
+          font-size: 13px;
           font-weight: 800;
         }
 
         .heroWrap {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 38px 24px 20px;
+          padding: 28px 24px 16px;
         }
 
         .heroCard {
-          position: relative;
-          overflow: hidden;
           display: grid;
-          grid-template-columns: 1.25fr 0.75fr;
+          grid-template-columns: 1.2fr 0.8fr;
           gap: 28px;
           align-items: center;
-          min-height: 390px;
-          padding: 48px;
-          border-radius: 42px;
+          padding: 38px;
+          border-radius: 36px;
           background:
-            linear-gradient(135deg, rgba(24, 59, 86, 0.98), rgba(31, 111, 91, 0.92)),
-            linear-gradient(45deg, #183b56, #2b8c83);
-          box-shadow: 0 30px 80px rgba(24, 59, 86, 0.25);
-          color: white;
-        }
-
-        .heroCard:before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.16), transparent 26%),
-            radial-gradient(circle at 18% 88%, rgba(242, 107, 94, 0.23), transparent 24%);
-          pointer-events: none;
-        }
-
-        .heroText {
-          position: relative;
-          z-index: 2;
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55), transparent 30%),
+            linear-gradient(135deg, #c8f1ef 0%, #d9ecff 42%, #ffe6d8 100%);
+          border: 1px solid rgba(255, 255, 255, 0.75);
+          box-shadow: 0 24px 60px rgba(77, 104, 135, 0.12);
         }
 
         .eyebrow {
-          margin: 0 0 12px;
-          color: #9ee7e5;
+          margin: 0 0 10px;
+          color: #f26b5e;
           font-size: 13px;
           font-weight: 900;
-          letter-spacing: 0.12em;
+          letter-spacing: 0.08em;
         }
 
         h1 {
           margin: 0;
-          font-size: clamp(38px, 5.8vw, 66px);
-          line-height: 1.08;
-          letter-spacing: -2.4px;
+          color: #183b56;
+          font-size: clamp(34px, 5vw, 58px);
+          line-height: 1.15;
+          letter-spacing: -2px;
           font-weight: 900;
         }
 
         .desc {
-          max-width: 620px;
-          margin: 20px 0 28px;
-          color: rgba(255, 255, 255, 0.82);
+          margin: 18px 0 26px;
+          max-width: 640px;
+          color: #52616b;
           font-size: 17px;
           line-height: 1.7;
         }
 
+        .searchPanel {
+          background: rgba(255, 255, 255, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          border-radius: 28px;
+          padding: 16px;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
         .searchBox {
-          max-width: 660px;
           display: flex;
           gap: 10px;
-          padding: 9px;
-          background: rgba(255, 255, 255, 0.98);
-          border-radius: 24px;
-          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
         }
 
         .searchBox input {
           flex: 1;
           border: none;
           outline: none;
-          background: #f6fbfd;
-          color: #1f2933;
-          padding: 17px 18px;
+          background: #ffffff;
+          color: #24324a;
+          padding: 16px 18px;
           border-radius: 18px;
           font-size: 16px;
+          box-shadow: inset 0 0 0 1px #e7edf4;
         }
 
         .searchBox button {
           border: none;
-          background: #f26b5e;
-          color: white;
+          background: linear-gradient(135deg, #183b56, #2d587d);
+          color: #ffffff;
+          padding: 0 28px;
           border-radius: 18px;
-          padding: 0 30px;
           font-size: 16px;
           font-weight: 900;
           cursor: pointer;
-          transition: 0.2s;
         }
 
-        .searchBox button:hover {
-          transform: translateY(-1px);
-          background: #ef5b4d;
+        .optionRow {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 14px;
+          margin-top: 14px;
+          flex-wrap: wrap;
+        }
+
+        .selectWrap {
+          min-width: 230px;
+        }
+
+        .selectWrap label {
+          display: block;
+          margin-bottom: 8px;
+          color: #52616b;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .selectWrap select {
+          width: 100%;
+          border: 1px solid #e2eaf2;
+          background: #ffffff;
+          color: #24324a;
+          border-radius: 16px;
+          padding: 12px 14px;
+          font-size: 14px;
+          outline: none;
+        }
+
+        .cuteBadgeWrap {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .cuteBadge {
+          background: #ffffff;
+          color: #506174;
+          border: 1px dashed #d6e3ee;
+          border-radius: 999px;
+          padding: 10px 12px;
+          font-size: 13px;
+          font-weight: 800;
         }
 
         .quickMenus {
           display: flex;
-          gap: 9px;
+          gap: 10px;
           flex-wrap: wrap;
           margin-top: 16px;
         }
 
         .quickMenus button {
-          border: 1px solid rgba(255, 255, 255, 0.28);
-          background: rgba(255, 255, 255, 0.14);
-          color: white;
+          border: 1px solid #dceaf0;
+          background: rgba(255, 255, 255, 0.82);
+          color: #183b56;
           border-radius: 999px;
           padding: 10px 14px;
           font-weight: 800;
           cursor: pointer;
-          backdrop-filter: blur(10px);
+          box-shadow: 0 6px 16px rgba(24, 59, 86, 0.05);
+        }
+
+        .quickMenus button span {
+          margin-right: 6px;
         }
 
         .quickMenus button.selected,
         .quickMenus button:hover {
-          background: white;
-          color: #183b56;
-        }
-
-        .quickMenus span {
-          margin-right: 5px;
+          background: linear-gradient(135deg, #ffdce2, #ffffff);
+          border-color: #f6b4bf;
         }
 
         .heroArt {
           position: relative;
-          height: 320px;
-          z-index: 2;
+          min-height: 300px;
         }
 
-        .sun {
+        .artBubble {
           position: absolute;
-          width: 120px;
-          height: 120px;
-          right: 34px;
-          top: 8px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #ffd7c8, #f26b5e);
-          opacity: 0.9;
-        }
-
-        .plate {
-          position: absolute;
-          right: 34px;
-          top: 74px;
-          width: 260px;
-          min-height: 205px;
-          border-radius: 38px;
-          background: rgba(255, 255, 255, 0.94);
-          color: #183b56;
-          padding: 32px 28px;
-          box-shadow: 0 30px 70px rgba(0, 0, 0, 0.22);
-        }
-
-        .bowl {
-          width: 62px;
-          height: 62px;
-          border-radius: 22px;
-          background: #eaf6fa;
+          width: 76px;
+          height: 76px;
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.78);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 30px;
-          margin-bottom: 20px;
+          font-size: 34px;
+          box-shadow: 0 16px 30px rgba(92, 113, 137, 0.12);
         }
 
-        .plate strong {
+        .bubble1 {
+          top: 20px;
+          left: 10px;
+          transform: rotate(-8deg);
+        }
+
+        .bubble2 {
+          top: 118px;
+          right: 28px;
+          transform: rotate(8deg);
+        }
+
+        .bubble3 {
+          bottom: 26px;
+          left: 38px;
+          transform: rotate(-6deg);
+        }
+
+        .miniCard {
+          position: absolute;
+          right: 24px;
+          top: 20px;
+          width: 250px;
+          background: rgba(255, 255, 255, 0.88);
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          border-radius: 30px;
+          padding: 26px 22px;
+          box-shadow: 0 20px 40px rgba(86, 107, 134, 0.15);
+        }
+
+        .miniCard.second {
+          top: auto;
+          bottom: 24px;
+          left: 90px;
+          right: auto;
+        }
+
+        .miniCardIcon {
+          width: 48px;
+          height: 48px;
+          border-radius: 18px;
+          background: linear-gradient(135deg, #ffe5e8, #fff2d9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          margin-bottom: 14px;
+        }
+
+        .miniCard strong {
           display: block;
-          font-size: 24px;
-          letter-spacing: -0.8px;
-          margin-bottom: 10px;
-        }
-
-        .plate span {
-          color: #f26b5e;
-          font-size: 24px;
-          font-weight: 900;
-        }
-
-        .wave {
-          position: absolute;
-          border-radius: 999px;
-          background: rgba(234, 246, 250, 0.28);
-        }
-
-        .waveOne {
-          width: 230px;
-          height: 42px;
-          right: 0;
-          bottom: 36px;
-          transform: rotate(-8deg);
-        }
-
-        .waveTwo {
-          width: 160px;
-          height: 32px;
-          right: 130px;
-          bottom: 5px;
-          transform: rotate(-8deg);
-          opacity: 0.7;
-        }
-
-        .miniBadge {
-          position: absolute;
-          background: white;
           color: #183b56;
-          border-radius: 999px;
-          padding: 10px 14px;
-          font-size: 13px;
+          font-size: 20px;
+          margin-bottom: 8px;
+        }
+
+        .miniCard span {
+          color: #f26b5e;
+          font-size: 22px;
           font-weight: 900;
-          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
         }
 
-        .badgeOne {
-          left: 14px;
-          top: 84px;
-        }
-
-        .badgeTwo {
-          left: 30px;
-          bottom: 72px;
-        }
-
-        .infoStrip {
+        .summaryRow {
           max-width: 980px;
-          margin: -18px auto 0;
+          margin: 18px auto 0;
           padding: 0 24px;
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 14px;
-          position: relative;
-          z-index: 4;
         }
 
-        .infoStrip div {
-          background: rgba(255, 255, 255, 0.95);
-          border: 1px solid #e2edf2;
+        .summaryCard {
+          background: rgba(255, 255, 255, 0.84);
+          border: 1px solid #e7edf4;
           border-radius: 22px;
-          padding: 20px 22px;
-          box-shadow: 0 16px 38px rgba(24, 59, 86, 0.09);
+          padding: 18px 20px;
+          box-shadow: 0 14px 30px rgba(24, 59, 86, 0.06);
         }
 
-        .infoStrip span {
+        .summaryCard span {
           display: block;
           color: #7b8794;
           font-size: 13px;
-          margin-bottom: 7px;
+          margin-bottom: 8px;
         }
 
-        .infoStrip strong {
+        .summaryCard strong {
           color: #183b56;
-          font-size: 17px;
+          font-size: 18px;
         }
 
         .content {
           max-width: 1120px;
-          margin: 54px auto 80px;
+          margin: 34px auto 80px;
           padding: 0 24px;
         }
 
@@ -716,13 +777,13 @@ export default function Home() {
           color: #f26b5e;
           font-size: 12px;
           font-weight: 900;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.08em;
         }
 
         h2 {
           margin: 0;
           color: #183b56;
-          font-size: 34px;
+          font-size: 32px;
           letter-spacing: -1px;
         }
 
@@ -734,43 +795,34 @@ export default function Home() {
         }
 
         .filters button {
-          border: 1px solid #dce9ee;
-          background: white;
+          border: 1px solid #dce7ef;
+          background: #ffffff;
           color: #52616b;
           border-radius: 999px;
           padding: 10px 14px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 6px 18px rgba(24, 59, 86, 0.04);
+          box-shadow: 0 6px 16px rgba(24, 59, 86, 0.04);
         }
 
         .filters button.active {
-          background: #183b56;
+          background: linear-gradient(135deg, #183b56, #345b7c);
           color: white;
           border-color: #183b56;
         }
 
         .stateBox {
-          background: white;
-          border: 1px solid #e1edf2;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid #e7edf4;
           border-radius: 30px;
           padding: 54px 28px;
           text-align: center;
-          box-shadow: 0 18px 50px rgba(24, 59, 86, 0.07);
+          box-shadow: 0 18px 40px rgba(24, 59, 86, 0.07);
         }
 
-        .stateIcon {
-          width: 64px;
-          height: 64px;
-          margin: 0 auto 16px;
-          border-radius: 24px;
-          background: #eaf6fa;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #183b56;
-          font-size: 28px;
-          font-weight: 900;
+        .stateEmoji {
+          font-size: 44px;
+          margin-bottom: 14px;
         }
 
         .stateBox strong {
@@ -791,204 +843,229 @@ export default function Home() {
           gap: 16px;
         }
 
-        .guideGrid div {
-          background: white;
-          border: 1px solid #e1edf2;
+        .guideCard {
+          background: rgba(255, 255, 255, 0.88);
+          border: 1px solid #e7edf4;
           border-radius: 28px;
           padding: 28px;
-          box-shadow: 0 18px 45px rgba(24, 59, 86, 0.06);
+          box-shadow: 0 16px 34px rgba(24, 59, 86, 0.06);
         }
 
-        .guideGrid span {
-          display: inline-flex;
-          width: 42px;
-          height: 42px;
-          border-radius: 16px;
-          background: #eaf6fa;
-          color: #183b56;
+        .guideIcon {
+          width: 52px;
+          height: 52px;
+          border-radius: 18px;
+          background: linear-gradient(135deg, #dff7f6, #ffe9df);
+          display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 900;
+          font-size: 25px;
           margin-bottom: 16px;
         }
 
-        .guideGrid strong {
+        .guideCard strong {
           display: block;
           color: #183b56;
           font-size: 20px;
           margin-bottom: 8px;
         }
 
-        .guideGrid p {
+        .guideCard p {
           margin: 0;
           color: #52616b;
           line-height: 1.6;
         }
 
-        .stats {
+        .statsGrid {
           display: grid;
-          grid-template-columns: 1fr 1fr 1.2fr;
+          grid-template-columns: repeat(3, 1fr);
           gap: 14px;
+          margin-bottom: 18px;
+        }
+
+        .statBox {
+          border-radius: 24px;
+          padding: 22px;
+          box-shadow: 0 14px 30px rgba(24, 59, 86, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.85);
+        }
+
+        .statBox span {
+          display: block;
+          font-size: 13px;
+          color: #5f6f80;
+          margin-bottom: 8px;
+          font-weight: 800;
+        }
+
+        .statBox strong {
+          font-size: 26px;
+          color: #183b56;
+        }
+
+        .pink {
+          background: linear-gradient(135deg, #fff0f2, #ffffff);
+        }
+
+        .mint {
+          background: linear-gradient(135deg, #effcf9, #ffffff);
+        }
+
+        .yellow {
+          background: linear-gradient(135deg, #fff8e7, #ffffff);
+        }
+
+        .resultGrid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .resultCard {
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid #e7edf4;
+          border-radius: 28px;
+          padding: 22px;
+          box-shadow: 0 16px 34px rgba(24, 59, 86, 0.06);
+          transition: 0.18s ease;
+        }
+
+        .resultCard:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 22px 42px rgba(24, 59, 86, 0.1);
+        }
+
+        .topCard {
+          background: linear-gradient(135deg, #fff8f4, #ffffff);
+          border-color: #ffd7c8;
+        }
+
+        .cardTop {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
           margin-bottom: 16px;
         }
 
-        .statCard {
-          background: white;
-          border: 1px solid #e1edf2;
-          border-radius: 24px;
-          padding: 22px;
-          box-shadow: 0 14px 36px rgba(24, 59, 86, 0.06);
-        }
-
-        .statCard span {
-          display: block;
-          color: #7b8794;
-          font-size: 13px;
-          margin-bottom: 8px;
-        }
-
-        .statCard strong {
-          color: #183b56;
-          font-size: 25px;
-        }
-
-        .priceText {
-          color: #f26b5e !important;
-        }
-
-        .rankingList {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .rankItem {
-          display: grid;
-          grid-template-columns: 58px 1fr 170px;
-          gap: 16px;
+        .rankBadge {
+          display: inline-flex;
           align-items: center;
-          background: rgba(255, 255, 255, 0.96);
-          border: 1px solid #e1edf2;
-          border-radius: 26px;
-          padding: 20px 22px;
-          box-shadow: 0 12px 34px rgba(24, 59, 86, 0.06);
-          transition: 0.18s;
-        }
-
-        .rankItem:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 18px 42px rgba(24, 59, 86, 0.1);
-        }
-
-        .topRank {
-          border-color: rgba(242, 107, 94, 0.28);
-          background:
-            linear-gradient(90deg, rgba(255, 246, 244, 0.96), rgba(255, 255, 255, 0.96));
-        }
-
-        .rankNum {
-          width: 44px;
-          height: 44px;
-          border-radius: 17px;
-          background: #eaf6fa;
+          gap: 8px;
+          background: #f4f9fc;
+          border-radius: 999px;
+          padding: 8px 12px;
           color: #183b56;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           font-weight: 900;
         }
 
-        .topRank .rankNum {
-          background: #f26b5e;
+        .priceBadge {
+          background: linear-gradient(135deg, #f26b5e, #ff9a6a);
           color: white;
-        }
-
-        .titleLine {
-          display: flex;
-          align-items: baseline;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        .titleLine strong {
-          color: #1f2933;
-          font-size: 19px;
-        }
-
-        .titleLine em {
-          font-style: normal;
-          color: #1f6f5b;
+          padding: 10px 14px;
+          border-radius: 999px;
+          font-size: 15px;
           font-weight: 900;
         }
 
-        .metaLine {
+        .storeTitle strong {
+          display: block;
+          color: #183b56;
+          font-size: 21px;
+          margin-bottom: 6px;
+          letter-spacing: -0.5px;
+        }
+
+        .storeTitle em {
+          font-style: normal;
+          color: #f26b5e;
+          font-size: 15px;
+          font-weight: 900;
+        }
+
+        .infoChips {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
-          margin-top: 10px;
+          margin-top: 14px;
         }
 
-        .metaLine span {
-          background: #f3f8fa;
-          color: #52616b;
+        .infoChips span {
+          background: #f3f8fb;
+          color: #556474;
           border-radius: 999px;
-          padding: 6px 10px;
+          padding: 7px 10px;
           font-size: 13px;
           font-weight: 700;
         }
 
-        .rankMain p {
-          margin: 10px 0 0;
+        .addressText {
+          margin: 14px 0 0;
           color: #7b8794;
           font-size: 14px;
-          line-height: 1.5;
+          line-height: 1.6;
         }
 
-        .rankSide {
-          text-align: right;
-        }
-
-        .rankSide > strong {
-          display: block;
-          color: #f26b5e;
-          font-size: 24px;
-          margin-bottom: 11px;
-        }
-
-        .actions {
+        .actionRow {
           display: flex;
-          justify-content: flex-end;
-          gap: 7px;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 18px;
         }
 
-        .actions a {
+        .actionRow a {
           text-decoration: none;
           background: #eaf6fa;
           color: #183b56;
           border-radius: 999px;
-          padding: 8px 11px;
+          padding: 10px 12px;
           font-size: 13px;
           font-weight: 900;
         }
 
-        .actions a:hover {
+        .actionRow a:hover {
           background: #183b56;
           color: white;
         }
 
-        @media (max-width: 880px) {
-          nav {
-            display: none;
-          }
-
+        @media (max-width: 920px) {
           .heroCard {
             grid-template-columns: 1fr;
-            padding: 34px 24px;
-            border-radius: 32px;
+            padding: 28px;
           }
 
           .heroArt {
-            display: none;
+            min-height: 220px;
+          }
+
+          .miniCard.second {
+            left: 24px;
+          }
+
+          .summaryRow,
+          .statsGrid,
+          .guideGrid,
+          .resultGrid {
+            grid-template-columns: 1fr;
+          }
+
+          .contentTop {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .topInner {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .heroWrap,
+          .content {
+            padding-left: 16px;
+            padding-right: 16px;
           }
 
           .searchBox {
@@ -999,61 +1076,21 @@ export default function Home() {
             padding: 15px;
           }
 
-          .infoStrip {
-            grid-template-columns: 1fr;
-          }
-
-          .contentTop {
+          .optionRow {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
           }
 
-          .guideGrid {
-            grid-template-columns: 1fr;
-          }
-
-          .stats {
-            grid-template-columns: 1fr;
-          }
-
-          .rankItem {
-            grid-template-columns: 48px 1fr;
-          }
-
-          .rankSide {
-            grid-column: 2;
-            text-align: left;
-          }
-
-          .actions {
-            justify-content: flex-start;
-          }
-        }
-
-        @media (max-width: 520px) {
-          .topInner {
-            padding: 14px 16px;
-          }
-
-          .heroWrap {
-            padding: 24px 16px 12px;
+          .heroArt {
+            display: none;
           }
 
           h1 {
-            font-size: 36px;
+            font-size: 34px;
           }
 
-          .content {
-            padding: 0 16px;
-            margin-top: 42px;
-          }
-
-          .rankItem {
-            padding: 18px;
-          }
-
-          .titleLine strong {
-            font-size: 17px;
+          h2 {
+            font-size: 28px;
           }
         }
       `}</style>
