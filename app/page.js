@@ -14,7 +14,16 @@ export default function Home() {
   const menuKey = process.env.NEXT_PUBLIC_GOOD_PRICE_MENU_KEY;
   const storeKey = process.env.NEXT_PUBLIC_GOOD_PRICE_STORE_KEY;
 
-  const quickMenus = ["국밥", "김밥", "짜장면", "커피", "백반", "칼국수", "돈가스", "냉면"];
+  const quickMenus = [
+    { name: "국밥", icon: "🥘" },
+    { name: "김밥", icon: "🍙" },
+    { name: "짜장면", icon: "🍜" },
+    { name: "커피", icon: "☕" },
+    { name: "백반", icon: "🍚" },
+    { name: "칼국수", icon: "🥣" },
+    { name: "돈가스", icon: "🍛" },
+    { name: "냉면", icon: "🧊" },
+  ];
 
   useEffect(() => {
     async function fetchData() {
@@ -117,10 +126,10 @@ export default function Home() {
 
   return (
     <main className="page">
-      <header className="topHeader">
-        <div className="headerInner">
+      <header className="topBar">
+        <div className="topInner">
           <div className="brand">
-            <div className="brandMark">착</div>
+            <div className="brandIcon">한</div>
             <div>
               <strong>착한한끼 부산</strong>
               <span>Busan Good Price Meal</span>
@@ -129,49 +138,90 @@ export default function Home() {
 
           <nav>
             <span>공공데이터</span>
-            <span>메뉴 가격 비교</span>
-            <span>착한가격업소</span>
+            <span>가격비교</span>
+            <span>지도연결</span>
           </nav>
         </div>
       </header>
 
-      <section className="searchSection">
-        <div className="titleBlock">
-          <p>공공데이터 기반 생활물가 비교 서비스</p>
-          <h1>부산 착한가격업소 메뉴 가격 비교</h1>
-          <span>
-            원하는 메뉴를 검색하면 부산 착한가격업소의 메뉴 가격을 낮은 가격순으로 확인할 수 있습니다.
-          </span>
-        </div>
+      <section className="heroWrap">
+        <div className="heroCard">
+          <div className="heroText">
+            <p className="eyebrow">PUBLIC DATA SERVICE</p>
+            <h1>
+              부산의 착한 한 끼,
+              <br />
+              가격부터 비교하세요
+            </h1>
+            <p className="desc">
+              부산 착한가격업소 메뉴 정보를 공공데이터로 불러와
+              원하는 메뉴를 가격 낮은 순으로 보여드립니다.
+            </p>
 
-        <div className="searchBox">
-          <input
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSearch();
-            }}
-            placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
-          />
-          <button onClick={handleSearch}>검색</button>
-        </div>
+            <div className="searchBox">
+              <input
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+                placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
+              />
+              <button onClick={handleSearch}>검색</button>
+            </div>
 
-        <div className="quickArea">
-          <span>추천 검색어</span>
-          <div>
-            {quickMenus.map((menu) => (
-              <button key={menu} onClick={() => handleQuickSearch(menu)}>
-                {menu}
-              </button>
-            ))}
+            <div className="quickMenus">
+              {quickMenus.map((menu) => (
+                <button
+                  key={menu.name}
+                  onClick={() => handleQuickSearch(menu.name)}
+                  className={selectedKeyword === menu.name ? "selected" : ""}
+                >
+                  <span>{menu.icon}</span>
+                  {menu.name}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className="heroArt">
+            <div className="sun"></div>
+            <div className="plate">
+              <div className="bowl">🍚</div>
+              <strong>오늘의 알뜰 메뉴</strong>
+              <span>
+                {cheapest
+                  ? `${cheapest.priceNumber.toLocaleString()}원부터`
+                  : "가격 비교 준비 완료"}
+              </span>
+            </div>
+            <div className="wave waveOne"></div>
+            <div className="wave waveTwo"></div>
+            <div className="miniBadge badgeOne">가격 낮은 순</div>
+            <div className="miniBadge badgeTwo">부산 착한가격업소</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="infoStrip">
+        <div>
+          <span>데이터</span>
+          <strong>부산 착한가격업소</strong>
+        </div>
+        <div>
+          <span>검색</span>
+          <strong>메뉴명 · 업소명</strong>
+        </div>
+        <div>
+          <span>정렬</span>
+          <strong>가격 낮은 순</strong>
         </div>
       </section>
 
       <section className="content">
         <div className="contentTop">
           <div>
-            <p className="label">PRICE RANKING</p>
+            <p className="sectionLabel">PRICE RANKING</p>
             <h2>{selectedKeyword ? `${selectedKeyword} 검색 결과` : "메뉴를 검색해보세요"}</h2>
           </div>
 
@@ -205,13 +255,15 @@ export default function Home() {
 
         {loading && (
           <div className="stateBox">
-            <strong>데이터를 불러오는 중입니다</strong>
+            <div className="stateIcon">🌊</div>
+            <strong>착한가격 메뉴를 불러오는 중입니다</strong>
             <p>잠시만 기다려주세요.</p>
           </div>
         )}
 
         {error && (
           <div className="stateBox">
+            <div className="stateIcon">!</div>
             <strong>확인이 필요합니다</strong>
             <p>{error}</p>
           </div>
@@ -220,16 +272,19 @@ export default function Home() {
         {!loading && !error && !selectedKeyword && (
           <div className="guideGrid">
             <div>
-              <strong>01. 메뉴 검색</strong>
-              <p>국밥, 김밥, 커피처럼 원하는 메뉴명을 입력합니다.</p>
+              <span>01</span>
+              <strong>메뉴 검색</strong>
+              <p>국밥, 김밥, 커피처럼 원하는 메뉴를 입력해보세요.</p>
             </div>
             <div>
-              <strong>02. 가격 비교</strong>
-              <p>검색 결과를 낮은 가격순으로 확인합니다.</p>
+              <span>02</span>
+              <strong>가격 비교</strong>
+              <p>착한가격업소 메뉴를 낮은 가격순으로 확인할 수 있어요.</p>
             </div>
             <div>
-              <strong>03. 위치 확인</strong>
-              <p>지도 보기 버튼으로 업소 위치를 바로 확인합니다.</p>
+              <span>03</span>
+              <strong>위치 확인</strong>
+              <p>지도 보기 버튼으로 업소 위치를 바로 확인할 수 있어요.</p>
             </div>
           </div>
         )}
@@ -237,47 +292,51 @@ export default function Home() {
         {!loading && !error && selectedKeyword && (
           <>
             <div className="stats">
-              <div>
+              <div className="statCard">
                 <span>검색 결과</span>
                 <strong>{results.length}개</strong>
               </div>
-              <div>
+              <div className="statCard">
                 <span>최저가</span>
-                <strong className="price">
+                <strong className="priceText">
                   {cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "-"}
                 </strong>
+              </div>
+              <div className="statCard wide">
+                <span>검색 기준</span>
+                <strong>{selectedKeyword} · 가격 낮은 순</strong>
               </div>
             </div>
 
             {results.length === 0 ? (
               <div className="stateBox">
+                <div className="stateIcon">🔎</div>
                 <strong>검색 결과가 없습니다</strong>
                 <p>다른 메뉴명으로 검색해보세요.</p>
               </div>
             ) : (
-              <div className="listBox">
-                <div className="listHead">
-                  <span>순위</span>
-                  <span>업소 및 메뉴</span>
-                  <span>가격</span>
-                </div>
-
+              <div className="rankingList">
                 {results.map((item, index) => {
                   const store = item.store;
                   const address = store?.adres || "";
                   const mapQuery = encodeURIComponent(`${item.bsshNm} ${address}`);
 
                   return (
-                    <div className="listRow" key={`${item.bsshNm}-${item.itemNm}-${index}`}>
-                      <div className="rank">{index + 1}</div>
+                    <div
+                      className={index < 3 ? "rankItem topRank" : "rankItem"}
+                      key={`${item.bsshNm}-${item.itemNm}-${index}`}
+                    >
+                      <div className="rankNum">
+                        {index + 1}
+                      </div>
 
-                      <div className="info">
-                        <div className="mainLine">
+                      <div className="rankMain">
+                        <div className="titleLine">
                           <strong>{item.bsshNm}</strong>
                           <em>{item.itemNm}</em>
                         </div>
 
-                        <div className="subLine">
+                        <div className="metaLine">
                           {store?.locale && <span>{store.locale}</span>}
                           {store?.bsnTime && <span>{stripHtml(store.bsnTime)}</span>}
                           {store?.parkngAt && (
@@ -288,9 +347,9 @@ export default function Home() {
                         {address && <p>{stripHtml(address)}</p>}
                       </div>
 
-                      <div className="priceArea">
+                      <div className="rankSide">
                         <strong>{item.priceNumber.toLocaleString()}원</strong>
-                        <div>
+                        <div className="actions">
                           <a
                             href={`https://map.naver.com/p/search/${mapQuery}`}
                             target="_blank"
@@ -313,26 +372,30 @@ export default function Home() {
       <style jsx>{`
         .page {
           min-height: 100vh;
-          background: #f6f9fb;
+          background:
+            radial-gradient(circle at top left, rgba(113, 201, 206, 0.22), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(242, 107, 94, 0.14), transparent 28%),
+            #f6fbfd;
           color: #1f2933;
           font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
         }
 
-        .topHeader {
-          background: #ffffff;
-          border-bottom: 1px solid #e5edf2;
+        .topBar {
+          background: rgba(255, 255, 255, 0.82);
+          backdrop-filter: blur(18px);
+          border-bottom: 1px solid rgba(218, 232, 238, 0.8);
           position: sticky;
           top: 0;
-          z-index: 10;
+          z-index: 20;
         }
 
-        .headerInner {
-          max-width: 1080px;
+        .topInner {
+          max-width: 1120px;
           margin: 0 auto;
-          padding: 18px 24px;
+          padding: 16px 24px;
           display: flex;
-          align-items: center;
           justify-content: space-between;
+          align-items: center;
         }
 
         .brand {
@@ -341,142 +404,303 @@ export default function Home() {
           gap: 12px;
         }
 
-        .brandMark {
-          width: 38px;
-          height: 38px;
-          border-radius: 14px;
-          background: #183b56;
-          color: #ffffff;
+        .brandIcon {
+          width: 42px;
+          height: 42px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, #183b56, #1f6f5b);
+          color: white;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 900;
+          box-shadow: 0 12px 24px rgba(24, 59, 86, 0.22);
         }
 
         .brand strong {
           display: block;
-          font-size: 18px;
           color: #183b56;
+          font-size: 18px;
           letter-spacing: -0.5px;
         }
 
         .brand span {
           display: block;
           margin-top: 2px;
-          font-size: 12px;
           color: #7b8794;
+          font-size: 12px;
         }
 
         nav {
           display: flex;
-          gap: 20px;
+          gap: 22px;
           color: #52616b;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 800;
         }
 
-        .searchSection {
-          max-width: 1080px;
+        .heroWrap {
+          max-width: 1120px;
           margin: 0 auto;
-          padding: 58px 24px 34px;
+          padding: 38px 24px 20px;
         }
 
-        .titleBlock {
-          max-width: 720px;
+        .heroCard {
+          position: relative;
+          overflow: hidden;
+          display: grid;
+          grid-template-columns: 1.25fr 0.75fr;
+          gap: 28px;
+          align-items: center;
+          min-height: 390px;
+          padding: 48px;
+          border-radius: 42px;
+          background:
+            linear-gradient(135deg, rgba(24, 59, 86, 0.98), rgba(31, 111, 91, 0.92)),
+            linear-gradient(45deg, #183b56, #2b8c83);
+          box-shadow: 0 30px 80px rgba(24, 59, 86, 0.25);
+          color: white;
         }
 
-        .titleBlock p {
+        .heroCard:before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.16), transparent 26%),
+            radial-gradient(circle at 18% 88%, rgba(242, 107, 94, 0.23), transparent 24%);
+          pointer-events: none;
+        }
+
+        .heroText {
+          position: relative;
+          z-index: 2;
+        }
+
+        .eyebrow {
           margin: 0 0 12px;
-          color: #f26b5e;
-          font-weight: 900;
+          color: #9ee7e5;
           font-size: 13px;
-          letter-spacing: 0.08em;
+          font-weight: 900;
+          letter-spacing: 0.12em;
         }
 
         h1 {
           margin: 0;
-          color: #183b56;
-          font-size: clamp(34px, 5vw, 54px);
-          line-height: 1.18;
-          letter-spacing: -2px;
+          font-size: clamp(38px, 5.8vw, 66px);
+          line-height: 1.08;
+          letter-spacing: -2.4px;
           font-weight: 900;
         }
 
-        .titleBlock span {
-          display: block;
-          margin-top: 16px;
-          color: #52616b;
+        .desc {
+          max-width: 620px;
+          margin: 20px 0 28px;
+          color: rgba(255, 255, 255, 0.82);
           font-size: 17px;
           line-height: 1.7;
         }
 
         .searchBox {
-          margin-top: 30px;
-          background: #ffffff;
-          border: 1px solid #dbe7ee;
-          border-radius: 22px;
-          padding: 8px;
+          max-width: 660px;
           display: flex;
-          gap: 8px;
-          box-shadow: 0 14px 36px rgba(24, 59, 86, 0.08);
+          gap: 10px;
+          padding: 9px;
+          background: rgba(255, 255, 255, 0.98);
+          border-radius: 24px;
+          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
         }
 
         .searchBox input {
           flex: 1;
           border: none;
           outline: none;
-          padding: 17px 18px;
-          border-radius: 16px;
-          background: #f8fbfd;
+          background: #f6fbfd;
           color: #1f2933;
+          padding: 17px 18px;
+          border-radius: 18px;
           font-size: 16px;
         }
 
         .searchBox button {
           border: none;
-          border-radius: 16px;
-          background: #183b56;
-          color: #ffffff;
+          background: #f26b5e;
+          color: white;
+          border-radius: 18px;
           padding: 0 30px;
           font-size: 16px;
           font-weight: 900;
           cursor: pointer;
+          transition: 0.2s;
         }
 
-        .quickArea {
-          margin-top: 18px;
+        .searchBox button:hover {
+          transform: translateY(-1px);
+          background: #ef5b4d;
+        }
+
+        .quickMenus {
           display: flex;
-          align-items: center;
-          gap: 14px;
+          gap: 9px;
           flex-wrap: wrap;
+          margin-top: 16px;
         }
 
-        .quickArea > span {
-          color: #7b8794;
-          font-size: 14px;
-          font-weight: 800;
-        }
-
-        .quickArea div {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .quickArea button {
-          border: 1px solid #d8e8ef;
-          background: #eaf6fa;
-          color: #183b56;
+        .quickMenus button {
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          background: rgba(255, 255, 255, 0.14);
+          color: white;
           border-radius: 999px;
-          padding: 9px 14px;
+          padding: 10px 14px;
           font-weight: 800;
           cursor: pointer;
+          backdrop-filter: blur(10px);
+        }
+
+        .quickMenus button.selected,
+        .quickMenus button:hover {
+          background: white;
+          color: #183b56;
+        }
+
+        .quickMenus span {
+          margin-right: 5px;
+        }
+
+        .heroArt {
+          position: relative;
+          height: 320px;
+          z-index: 2;
+        }
+
+        .sun {
+          position: absolute;
+          width: 120px;
+          height: 120px;
+          right: 34px;
+          top: 8px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ffd7c8, #f26b5e);
+          opacity: 0.9;
+        }
+
+        .plate {
+          position: absolute;
+          right: 34px;
+          top: 74px;
+          width: 260px;
+          min-height: 205px;
+          border-radius: 38px;
+          background: rgba(255, 255, 255, 0.94);
+          color: #183b56;
+          padding: 32px 28px;
+          box-shadow: 0 30px 70px rgba(0, 0, 0, 0.22);
+        }
+
+        .bowl {
+          width: 62px;
+          height: 62px;
+          border-radius: 22px;
+          background: #eaf6fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 30px;
+          margin-bottom: 20px;
+        }
+
+        .plate strong {
+          display: block;
+          font-size: 24px;
+          letter-spacing: -0.8px;
+          margin-bottom: 10px;
+        }
+
+        .plate span {
+          color: #f26b5e;
+          font-size: 24px;
+          font-weight: 900;
+        }
+
+        .wave {
+          position: absolute;
+          border-radius: 999px;
+          background: rgba(234, 246, 250, 0.28);
+        }
+
+        .waveOne {
+          width: 230px;
+          height: 42px;
+          right: 0;
+          bottom: 36px;
+          transform: rotate(-8deg);
+        }
+
+        .waveTwo {
+          width: 160px;
+          height: 32px;
+          right: 130px;
+          bottom: 5px;
+          transform: rotate(-8deg);
+          opacity: 0.7;
+        }
+
+        .miniBadge {
+          position: absolute;
+          background: white;
+          color: #183b56;
+          border-radius: 999px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 900;
+          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+        }
+
+        .badgeOne {
+          left: 14px;
+          top: 84px;
+        }
+
+        .badgeTwo {
+          left: 30px;
+          bottom: 72px;
+        }
+
+        .infoStrip {
+          max-width: 980px;
+          margin: -18px auto 0;
+          padding: 0 24px;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+          position: relative;
+          z-index: 4;
+        }
+
+        .infoStrip div {
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #e2edf2;
+          border-radius: 22px;
+          padding: 20px 22px;
+          box-shadow: 0 16px 38px rgba(24, 59, 86, 0.09);
+        }
+
+        .infoStrip span {
+          display: block;
+          color: #7b8794;
+          font-size: 13px;
+          margin-bottom: 7px;
+        }
+
+        .infoStrip strong {
+          color: #183b56;
+          font-size: 17px;
         }
 
         .content {
-          max-width: 1080px;
-          margin: 0 auto;
-          padding: 26px 24px 80px;
+          max-width: 1120px;
+          margin: 54px auto 80px;
+          padding: 0 24px;
         }
 
         .contentTop {
@@ -487,18 +711,18 @@ export default function Home() {
           margin-bottom: 20px;
         }
 
-        .label {
+        .sectionLabel {
           margin: 0 0 8px;
           color: #f26b5e;
           font-size: 12px;
           font-weight: 900;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.1em;
         }
 
         h2 {
           margin: 0;
           color: #183b56;
-          font-size: 30px;
+          font-size: 34px;
           letter-spacing: -1px;
         }
 
@@ -510,35 +734,50 @@ export default function Home() {
         }
 
         .filters button {
-          border: 1px solid #dbe7ee;
-          background: #ffffff;
+          border: 1px solid #dce9ee;
+          background: white;
           color: #52616b;
           border-radius: 999px;
-          padding: 9px 13px;
+          padding: 10px 14px;
           font-weight: 800;
           cursor: pointer;
+          box-shadow: 0 6px 18px rgba(24, 59, 86, 0.04);
         }
 
         .filters button.active {
           background: #183b56;
-          color: #ffffff;
+          color: white;
           border-color: #183b56;
         }
 
         .stateBox {
-          background: #ffffff;
-          border: 1px solid #e1e8ed;
-          border-radius: 22px;
-          padding: 46px 24px;
+          background: white;
+          border: 1px solid #e1edf2;
+          border-radius: 30px;
+          padding: 54px 28px;
           text-align: center;
-          box-shadow: 0 12px 30px rgba(24, 59, 86, 0.05);
+          box-shadow: 0 18px 50px rgba(24, 59, 86, 0.07);
+        }
+
+        .stateIcon {
+          width: 64px;
+          height: 64px;
+          margin: 0 auto 16px;
+          border-radius: 24px;
+          background: #eaf6fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #183b56;
+          font-size: 28px;
+          font-weight: 900;
         }
 
         .stateBox strong {
           display: block;
           color: #183b56;
-          font-size: 22px;
-          margin-bottom: 8px;
+          font-size: 24px;
+          margin-bottom: 10px;
         }
 
         .stateBox p {
@@ -549,21 +788,34 @@ export default function Home() {
         .guideGrid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 14px;
+          gap: 16px;
         }
 
         .guideGrid div {
-          background: #ffffff;
-          border: 1px solid #e1e8ed;
-          border-radius: 22px;
-          padding: 24px;
-          box-shadow: 0 12px 30px rgba(24, 59, 86, 0.05);
+          background: white;
+          border: 1px solid #e1edf2;
+          border-radius: 28px;
+          padding: 28px;
+          box-shadow: 0 18px 45px rgba(24, 59, 86, 0.06);
+        }
+
+        .guideGrid span {
+          display: inline-flex;
+          width: 42px;
+          height: 42px;
+          border-radius: 16px;
+          background: #eaf6fa;
+          color: #183b56;
+          align-items: center;
+          justify-content: center;
+          font-weight: 900;
+          margin-bottom: 16px;
         }
 
         .guideGrid strong {
           display: block;
           color: #183b56;
-          font-size: 18px;
+          font-size: 20px;
           margin-bottom: 8px;
         }
 
@@ -575,66 +827,69 @@ export default function Home() {
 
         .stats {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: 1fr 1fr 1.2fr;
           gap: 14px;
-          margin-bottom: 14px;
+          margin-bottom: 16px;
         }
 
-        .stats div {
-          background: #ffffff;
-          border: 1px solid #e1e8ed;
-          border-radius: 20px;
-          padding: 20px;
+        .statCard {
+          background: white;
+          border: 1px solid #e1edf2;
+          border-radius: 24px;
+          padding: 22px;
+          box-shadow: 0 14px 36px rgba(24, 59, 86, 0.06);
         }
 
-        .stats span {
+        .statCard span {
           display: block;
           color: #7b8794;
-          font-size: 14px;
+          font-size: 13px;
           margin-bottom: 8px;
         }
 
-        .stats strong {
+        .statCard strong {
           color: #183b56;
-          font-size: 26px;
+          font-size: 25px;
         }
 
-        .stats .price {
-          color: #f26b5e;
+        .priceText {
+          color: #f26b5e !important;
         }
 
-        .listBox {
-          background: #ffffff;
-          border: 1px solid #e1e8ed;
-          border-radius: 24px;
-          overflow: hidden;
-          box-shadow: 0 16px 40px rgba(24, 59, 86, 0.07);
+        .rankingList {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
 
-        .listHead {
+        .rankItem {
           display: grid;
-          grid-template-columns: 70px 1fr 180px;
-          gap: 18px;
-          padding: 16px 22px;
-          background: #f1f6f9;
-          color: #7b8794;
-          font-size: 13px;
-          font-weight: 900;
-        }
-
-        .listRow {
-          display: grid;
-          grid-template-columns: 70px 1fr 180px;
-          gap: 18px;
-          padding: 22px;
-          border-top: 1px solid #edf2f5;
+          grid-template-columns: 58px 1fr 170px;
+          gap: 16px;
           align-items: center;
+          background: rgba(255, 255, 255, 0.96);
+          border: 1px solid #e1edf2;
+          border-radius: 26px;
+          padding: 20px 22px;
+          box-shadow: 0 12px 34px rgba(24, 59, 86, 0.06);
+          transition: 0.18s;
         }
 
-        .rank {
-          width: 38px;
-          height: 38px;
-          border-radius: 14px;
+        .rankItem:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 18px 42px rgba(24, 59, 86, 0.1);
+        }
+
+        .topRank {
+          border-color: rgba(242, 107, 94, 0.28);
+          background:
+            linear-gradient(90deg, rgba(255, 246, 244, 0.96), rgba(255, 255, 255, 0.96));
+        }
+
+        .rankNum {
+          width: 44px;
+          height: 44px;
+          border-radius: 17px;
           background: #eaf6fa;
           color: #183b56;
           display: flex;
@@ -643,85 +898,97 @@ export default function Home() {
           font-weight: 900;
         }
 
-        .mainLine {
+        .topRank .rankNum {
+          background: #f26b5e;
+          color: white;
+        }
+
+        .titleLine {
           display: flex;
           align-items: baseline;
           gap: 10px;
           flex-wrap: wrap;
         }
 
-        .mainLine strong {
+        .titleLine strong {
           color: #1f2933;
-          font-size: 18px;
+          font-size: 19px;
         }
 
-        .mainLine em {
+        .titleLine em {
           font-style: normal;
           color: #1f6f5b;
           font-weight: 900;
         }
 
-        .subLine {
+        .metaLine {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
-          margin-top: 9px;
+          margin-top: 10px;
         }
 
-        .subLine span {
-          background: #f5f8fa;
+        .metaLine span {
+          background: #f3f8fa;
           color: #52616b;
           border-radius: 999px;
-          padding: 5px 9px;
+          padding: 6px 10px;
           font-size: 13px;
           font-weight: 700;
         }
 
-        .info p {
-          margin: 9px 0 0;
+        .rankMain p {
+          margin: 10px 0 0;
           color: #7b8794;
           font-size: 14px;
           line-height: 1.5;
         }
 
-        .priceArea {
+        .rankSide {
           text-align: right;
         }
 
-        .priceArea > strong {
+        .rankSide > strong {
           display: block;
           color: #f26b5e;
           font-size: 24px;
-          margin-bottom: 10px;
+          margin-bottom: 11px;
         }
 
-        .priceArea div {
+        .actions {
           display: flex;
-          gap: 7px;
           justify-content: flex-end;
+          gap: 7px;
         }
 
-        .priceArea a {
+        .actions a {
           text-decoration: none;
           background: #eaf6fa;
           color: #183b56;
           border-radius: 999px;
-          padding: 7px 10px;
+          padding: 8px 11px;
           font-size: 13px;
           font-weight: 900;
         }
 
-        @media (max-width: 760px) {
-          .headerInner {
-            padding: 16px;
-          }
+        .actions a:hover {
+          background: #183b56;
+          color: white;
+        }
 
+        @media (max-width: 880px) {
           nav {
             display: none;
           }
 
-          .searchSection {
-            padding: 42px 18px 26px;
+          .heroCard {
+            grid-template-columns: 1fr;
+            padding: 34px 24px;
+            border-radius: 32px;
+          }
+
+          .heroArt {
+            display: none;
           }
 
           .searchBox {
@@ -732,8 +999,8 @@ export default function Home() {
             padding: 15px;
           }
 
-          .content {
-            padding: 18px 18px 60px;
+          .infoStrip {
+            grid-template-columns: 1fr;
           }
 
           .contentTop {
@@ -749,22 +1016,44 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .listHead {
-            display: none;
+          .rankItem {
+            grid-template-columns: 48px 1fr;
           }
 
-          .listRow {
-            grid-template-columns: 44px 1fr;
-            gap: 12px;
-          }
-
-          .priceArea {
+          .rankSide {
             grid-column: 2;
             text-align: left;
           }
 
-          .priceArea div {
+          .actions {
             justify-content: flex-start;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .topInner {
+            padding: 14px 16px;
+          }
+
+          .heroWrap {
+            padding: 24px 16px 12px;
+          }
+
+          h1 {
+            font-size: 36px;
+          }
+
+          .content {
+            padding: 0 16px;
+            margin-top: 42px;
+          }
+
+          .rankItem {
+            padding: 18px;
+          }
+
+          .titleLine strong {
+            font-size: 17px;
           }
         }
       `}</style>
