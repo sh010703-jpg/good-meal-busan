@@ -101,13 +101,13 @@ export default function Home() {
         return item.priceNumber <= Number(priceLimit);
       })
       .sort((a, b) => a.priceNumber - b.priceNumber)
-      .slice(0, 60);
+      .slice(0, 80);
   }, [menus, selectedKeyword, priceLimit, storeMap]);
 
   const cheapest = results[0];
 
   function handleSearch() {
-    setSelectedKeyword(keyword);
+    setSelectedKeyword(keyword.trim());
   }
 
   function handleQuickSearch(word) {
@@ -117,92 +117,62 @@ export default function Home() {
 
   return (
     <main className="page">
-      <section className="hero">
-        <nav className="nav">
-          <div className="logo">착한한끼 부산</div>
-          <div className="navLinks">
+      <header className="topHeader">
+        <div className="headerInner">
+          <div className="brand">
+            <div className="brandMark">착</div>
+            <div>
+              <strong>착한한끼 부산</strong>
+              <span>Busan Good Price Meal</span>
+            </div>
+          </div>
+
+          <nav>
             <span>공공데이터</span>
-            <span>메뉴가격비교</span>
-            <span>부산 착한가격업소</span>
-          </div>
-        </nav>
-
-        <div className="heroInner">
-          <div className="heroText">
-            <p className="eyebrow">Busan Good Price Meal</p>
-            <h1>
-              부산 착한가격업소
-              <br />
-              메뉴 가격을 한눈에
-            </h1>
-            <p className="heroDesc">
-              공공데이터를 활용해 부산의 착한가격업소 메뉴를 검색하고,
-              가격순으로 비교할 수 있는 생활물가 비교 서비스입니다.
-            </p>
-
-            <div className="searchPanel">
-              <div className="searchBox">
-                <input
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
-                  placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
-                />
-                <button onClick={handleSearch}>검색</button>
-              </div>
-
-              <div className="quickMenus">
-                {quickMenus.map((menu) => (
-                  <button key={menu} onClick={() => handleQuickSearch(menu)}>
-                    {menu}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="heroVisual">
-            <div className="visualCard mainCard">
-              <span className="smallLabel">오늘의 추천</span>
-              <strong>합리적인 한 끼</strong>
-              <p>부산 착한가격업소 메뉴를 가격순으로 확인하세요.</p>
-            </div>
-
-            <div className="visualCard priceCard">
-              <span>최저가 검색</span>
-              <strong>{cheapest ? `${cheapest.priceNumber.toLocaleString()}원` : "가격 비교"}</strong>
-            </div>
-
-            <div className="circle circleOne"></div>
-            <div className="circle circleTwo"></div>
-          </div>
+            <span>메뉴 가격 비교</span>
+            <span>착한가격업소</span>
+          </nav>
         </div>
-      </section>
+      </header>
 
-      <section className="summaryBand">
-        <div>
-          <span>데이터 기준</span>
-          <strong>부산 착한가격업소</strong>
+      <section className="searchSection">
+        <div className="titleBlock">
+          <p>공공데이터 기반 생활물가 비교 서비스</p>
+          <h1>부산 착한가격업소 메뉴 가격 비교</h1>
+          <span>
+            원하는 메뉴를 검색하면 부산 착한가격업소의 메뉴 가격을 낮은 가격순으로 확인할 수 있습니다.
+          </span>
         </div>
-        <div>
-          <span>검색 방식</span>
-          <strong>메뉴명·업소명</strong>
+
+        <div className="searchBox">
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
+            placeholder="메뉴명을 입력하세요. 예: 국밥, 김밥, 커피"
+          />
+          <button onClick={handleSearch}>검색</button>
         </div>
-        <div>
-          <span>정렬 방식</span>
-          <strong>가격 낮은 순</strong>
+
+        <div className="quickArea">
+          <span>추천 검색어</span>
+          <div>
+            {quickMenus.map((menu) => (
+              <button key={menu} onClick={() => handleQuickSearch(menu)}>
+                {menu}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="content">
-        <div className="sectionHeader">
+        <div className="contentTop">
           <div>
-            <p className="sectionLabel">Price Ranking</p>
-            <h2>
-              {selectedKeyword ? `${selectedKeyword} 검색 결과` : "메뉴 가격 비교"}
-            </h2>
+            <p className="label">PRICE RANKING</p>
+            <h2>{selectedKeyword ? `${selectedKeyword} 검색 결과` : "메뉴를 검색해보세요"}</h2>
           </div>
 
           <div className="filters">
@@ -248,28 +218,25 @@ export default function Home() {
         )}
 
         {!loading && !error && !selectedKeyword && (
-          <div className="introGrid">
-            <div className="introCard">
-              <span>01</span>
-              <strong>메뉴 검색</strong>
-              <p>국밥, 김밥, 커피처럼 원하는 메뉴명을 입력하세요.</p>
+          <div className="guideGrid">
+            <div>
+              <strong>01. 메뉴 검색</strong>
+              <p>국밥, 김밥, 커피처럼 원하는 메뉴명을 입력합니다.</p>
             </div>
-            <div className="introCard">
-              <span>02</span>
-              <strong>가격 비교</strong>
-              <p>검색 결과를 가격 낮은 순으로 확인할 수 있습니다.</p>
+            <div>
+              <strong>02. 가격 비교</strong>
+              <p>검색 결과를 낮은 가격순으로 확인합니다.</p>
             </div>
-            <div className="introCard">
-              <span>03</span>
-              <strong>지도 연결</strong>
-              <p>업소 위치는 네이버지도 검색으로 바로 확인할 수 있습니다.</p>
+            <div>
+              <strong>03. 위치 확인</strong>
+              <p>지도 보기 버튼으로 업소 위치를 바로 확인합니다.</p>
             </div>
           </div>
         )}
 
         {!loading && !error && selectedKeyword && (
           <>
-            <div className="resultStats">
+            <div className="stats">
               <div>
                 <span>검색 결과</span>
                 <strong>{results.length}개</strong>
@@ -285,26 +252,32 @@ export default function Home() {
             {results.length === 0 ? (
               <div className="stateBox">
                 <strong>검색 결과가 없습니다</strong>
-                <p>다른 메뉴명으로 다시 검색해보세요.</p>
+                <p>다른 메뉴명으로 검색해보세요.</p>
               </div>
             ) : (
-              <div className="rankingList">
+              <div className="listBox">
+                <div className="listHead">
+                  <span>순위</span>
+                  <span>업소 및 메뉴</span>
+                  <span>가격</span>
+                </div>
+
                 {results.map((item, index) => {
                   const store = item.store;
                   const address = store?.adres || "";
                   const mapQuery = encodeURIComponent(`${item.bsshNm} ${address}`);
 
                   return (
-                    <div className="rankRow" key={`${item.bsshNm}-${item.itemNm}-${index}`}>
-                      <div className="rankNum">{index + 1}</div>
+                    <div className="listRow" key={`${item.bsshNm}-${item.itemNm}-${index}`}>
+                      <div className="rank">{index + 1}</div>
 
-                      <div className="rankInfo">
-                        <div className="titleLine">
+                      <div className="info">
+                        <div className="mainLine">
                           <strong>{item.bsshNm}</strong>
-                          <span>{item.itemNm}</span>
+                          <em>{item.itemNm}</em>
                         </div>
 
-                        <div className="metaLine">
+                        <div className="subLine">
                           {store?.locale && <span>{store.locale}</span>}
                           {store?.bsnTime && <span>{stripHtml(store.bsnTime)}</span>}
                           {store?.parkngAt && (
@@ -315,9 +288,9 @@ export default function Home() {
                         {address && <p>{stripHtml(address)}</p>}
                       </div>
 
-                      <div className="rankPrice">
-                        <strong>{Number(item.priceNumber).toLocaleString()}원</strong>
-                        <div className="actions">
+                      <div className="priceArea">
+                        <strong>{item.priceNumber.toLocaleString()}원</strong>
+                        <div>
                           <a
                             href={`https://map.naver.com/p/search/${mapQuery}`}
                             target="_blank"
@@ -340,119 +313,158 @@ export default function Home() {
       <style jsx>{`
         .page {
           min-height: 100vh;
-          background: #f5f8fa;
+          background: #f6f9fb;
           color: #1f2933;
           font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
         }
 
-        .hero {
-          background:
-            linear-gradient(135deg, rgba(24, 59, 86, 0.96), rgba(31, 94, 75, 0.9)),
-            radial-gradient(circle at 80% 20%, rgba(242, 107, 94, 0.3), transparent 30%);
-          color: white;
-          padding: 24px 32px 72px;
-          border-bottom-left-radius: 42px;
-          border-bottom-right-radius: 42px;
+        .topHeader {
+          background: #ffffff;
+          border-bottom: 1px solid #e5edf2;
+          position: sticky;
+          top: 0;
+          z-index: 10;
         }
 
-        .nav {
-          max-width: 1120px;
-          margin: 0 auto 52px;
+        .headerInner {
+          max-width: 1080px;
+          margin: 0 auto;
+          padding: 18px 24px;
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
         }
 
-        .logo {
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .brandMark {
+          width: 38px;
+          height: 38px;
+          border-radius: 14px;
+          background: #183b56;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-weight: 900;
-          font-size: 22px;
+        }
+
+        .brand strong {
+          display: block;
+          font-size: 18px;
+          color: #183b56;
           letter-spacing: -0.5px;
         }
 
-        .navLinks {
+        .brand span {
+          display: block;
+          margin-top: 2px;
+          font-size: 12px;
+          color: #7b8794;
+        }
+
+        nav {
           display: flex;
-          gap: 22px;
+          gap: 20px;
+          color: #52616b;
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.78);
+          font-weight: 700;
         }
 
-        .heroInner {
-          max-width: 1120px;
+        .searchSection {
+          max-width: 1080px;
           margin: 0 auto;
-          display: grid;
-          grid-template-columns: 1.15fr 0.85fr;
-          gap: 42px;
-          align-items: center;
+          padding: 58px 24px 34px;
         }
 
-        .eyebrow {
+        .titleBlock {
+          max-width: 720px;
+        }
+
+        .titleBlock p {
           margin: 0 0 12px;
-          color: #bfe5e0;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
+          color: #f26b5e;
+          font-weight: 900;
           font-size: 13px;
+          letter-spacing: 0.08em;
         }
 
         h1 {
           margin: 0;
-          font-size: clamp(42px, 6vw, 72px);
-          line-height: 1.08;
-          letter-spacing: -2.5px;
+          color: #183b56;
+          font-size: clamp(34px, 5vw, 54px);
+          line-height: 1.18;
+          letter-spacing: -2px;
           font-weight: 900;
         }
 
-        .heroDesc {
-          max-width: 620px;
-          margin: 22px 0 30px;
-          font-size: 18px;
+        .titleBlock span {
+          display: block;
+          margin-top: 16px;
+          color: #52616b;
+          font-size: 17px;
           line-height: 1.7;
-          color: rgba(255, 255, 255, 0.82);
-        }
-
-        .searchPanel {
-          background: white;
-          border-radius: 28px;
-          padding: 16px;
-          box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
         }
 
         .searchBox {
+          margin-top: 30px;
+          background: #ffffff;
+          border: 1px solid #dbe7ee;
+          border-radius: 22px;
+          padding: 8px;
           display: flex;
-          gap: 10px;
+          gap: 8px;
+          box-shadow: 0 14px 36px rgba(24, 59, 86, 0.08);
         }
 
         .searchBox input {
           flex: 1;
-          border: 1px solid #dde7ec;
-          background: #f8fafc;
-          color: #1f2933;
+          border: none;
           outline: none;
-          border-radius: 18px;
           padding: 17px 18px;
+          border-radius: 16px;
+          background: #f8fbfd;
+          color: #1f2933;
           font-size: 16px;
         }
 
         .searchBox button {
           border: none;
-          border-radius: 18px;
-          background: #f26b5e;
-          color: white;
-          padding: 0 28px;
-          font-weight: 900;
+          border-radius: 16px;
+          background: #183b56;
+          color: #ffffff;
+          padding: 0 30px;
           font-size: 16px;
+          font-weight: 900;
           cursor: pointer;
         }
 
-        .quickMenus {
+        .quickArea {
+          margin-top: 18px;
           display: flex;
+          align-items: center;
+          gap: 14px;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 12px;
         }
 
-        .quickMenus button {
-          border: none;
+        .quickArea > span {
+          color: #7b8794;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .quickArea div {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .quickArea button {
+          border: 1px solid #d8e8ef;
           background: #eaf6fa;
           color: #183b56;
           border-radius: 999px;
@@ -461,283 +473,168 @@ export default function Home() {
           cursor: pointer;
         }
 
-        .heroVisual {
-          position: relative;
-          min-height: 360px;
-        }
-
-        .visualCard {
-          position: absolute;
-          background: rgba(255, 255, 255, 0.94);
-          color: #183b56;
-          border-radius: 30px;
-          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
-        }
-
-        .mainCard {
-          top: 24px;
-          right: 32px;
-          width: 300px;
-          padding: 30px;
-        }
-
-        .mainCard .smallLabel {
-          display: inline-block;
-          background: #eaf6fa;
-          color: #1f6f5b;
-          border-radius: 999px;
-          padding: 7px 12px;
-          font-size: 13px;
-          font-weight: 900;
-          margin-bottom: 18px;
-        }
-
-        .mainCard strong {
-          display: block;
-          font-size: 30px;
-          letter-spacing: -1px;
-          margin-bottom: 12px;
-        }
-
-        .mainCard p {
-          margin: 0;
-          line-height: 1.6;
-          color: #52616b;
-        }
-
-        .priceCard {
-          left: 10px;
-          bottom: 28px;
-          width: 210px;
-          padding: 24px;
-        }
-
-        .priceCard span {
-          display: block;
-          color: #52616b;
-          font-weight: 800;
-          margin-bottom: 10px;
-        }
-
-        .priceCard strong {
-          color: #f26b5e;
-          font-size: 30px;
-          letter-spacing: -1px;
-        }
-
-        .circle {
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(234, 246, 250, 0.22);
-        }
-
-        .circleOne {
-          width: 180px;
-          height: 180px;
-          right: 0;
-          bottom: 0;
-        }
-
-        .circleTwo {
-          width: 90px;
-          height: 90px;
-          left: 80px;
-          top: 30px;
-          background: rgba(242, 107, 94, 0.22);
-        }
-
-        .summaryBand {
-          max-width: 960px;
-          margin: -34px auto 0;
-          background: white;
-          border-radius: 26px;
-          padding: 24px;
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 18px;
-          box-shadow: 0 18px 60px rgba(24, 59, 86, 0.12);
-          position: relative;
-          z-index: 2;
-        }
-
-        .summaryBand div {
-          padding: 8px 16px;
-          border-right: 1px solid #e4edf2;
-        }
-
-        .summaryBand div:last-child {
-          border-right: none;
-        }
-
-        .summaryBand span {
-          display: block;
-          color: #7b8794;
-          font-size: 13px;
-          margin-bottom: 8px;
-        }
-
-        .summaryBand strong {
-          font-size: 18px;
-          color: #183b56;
-        }
-
         .content {
-          max-width: 1120px;
-          margin: 64px auto 80px;
-          padding: 0 28px;
+          max-width: 1080px;
+          margin: 0 auto;
+          padding: 26px 24px 80px;
         }
 
-        .sectionHeader {
+        .contentTop {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 20px;
-          margin-bottom: 24px;
+          gap: 18px;
+          margin-bottom: 20px;
         }
 
-        .sectionLabel {
+        .label {
           margin: 0 0 8px;
           color: #f26b5e;
+          font-size: 12px;
           font-weight: 900;
-          font-size: 13px;
           letter-spacing: 0.08em;
-          text-transform: uppercase;
         }
 
         h2 {
           margin: 0;
           color: #183b56;
-          font-size: 34px;
+          font-size: 30px;
           letter-spacing: -1px;
         }
 
         .filters {
           display: flex;
-          flex-wrap: wrap;
           gap: 8px;
+          flex-wrap: wrap;
           justify-content: flex-end;
         }
 
         .filters button {
-          border: 1px solid #d8e4ea;
-          background: white;
+          border: 1px solid #dbe7ee;
+          background: #ffffff;
           color: #52616b;
           border-radius: 999px;
-          padding: 10px 14px;
+          padding: 9px 13px;
           font-weight: 800;
           cursor: pointer;
         }
 
         .filters button.active {
           background: #183b56;
-          color: white;
+          color: #ffffff;
           border-color: #183b56;
         }
 
         .stateBox {
-          background: white;
+          background: #ffffff;
           border: 1px solid #e1e8ed;
-          border-radius: 28px;
-          padding: 46px 28px;
+          border-radius: 22px;
+          padding: 46px 24px;
           text-align: center;
-          color: #52616b;
+          box-shadow: 0 12px 30px rgba(24, 59, 86, 0.05);
         }
 
         .stateBox strong {
           display: block;
           color: #183b56;
-          font-size: 24px;
-          margin-bottom: 10px;
+          font-size: 22px;
+          margin-bottom: 8px;
         }
 
-        .introGrid {
+        .stateBox p {
+          margin: 0;
+          color: #7b8794;
+        }
+
+        .guideGrid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 18px;
+          gap: 14px;
         }
 
-        .introCard {
-          background: white;
-          border-radius: 26px;
-          padding: 28px;
+        .guideGrid div {
+          background: #ffffff;
           border: 1px solid #e1e8ed;
-          box-shadow: 0 12px 36px rgba(24, 59, 86, 0.06);
+          border-radius: 22px;
+          padding: 24px;
+          box-shadow: 0 12px 30px rgba(24, 59, 86, 0.05);
         }
 
-        .introCard span {
-          color: #f26b5e;
-          font-weight: 900;
-          font-size: 14px;
-        }
-
-        .introCard strong {
+        .guideGrid strong {
           display: block;
-          margin: 12px 0 8px;
           color: #183b56;
-          font-size: 22px;
+          font-size: 18px;
+          margin-bottom: 8px;
         }
 
-        .introCard p {
+        .guideGrid p {
           margin: 0;
           color: #52616b;
           line-height: 1.6;
         }
 
-        .resultStats {
+        .stats {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px;
-          margin-bottom: 18px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+          margin-bottom: 14px;
         }
 
-        .resultStats div {
-          background: white;
+        .stats div {
+          background: #ffffff;
           border: 1px solid #e1e8ed;
-          border-radius: 22px;
-          padding: 22px;
+          border-radius: 20px;
+          padding: 20px;
         }
 
-        .resultStats span {
+        .stats span {
           display: block;
           color: #7b8794;
           font-size: 14px;
           margin-bottom: 8px;
         }
 
-        .resultStats strong {
+        .stats strong {
           color: #183b56;
-          font-size: 28px;
+          font-size: 26px;
         }
 
-        .resultStats .price {
+        .stats .price {
           color: #f26b5e;
         }
 
-        .rankingList {
-          background: white;
+        .listBox {
+          background: #ffffff;
           border: 1px solid #e1e8ed;
-          border-radius: 28px;
+          border-radius: 24px;
           overflow: hidden;
-          box-shadow: 0 18px 50px rgba(24, 59, 86, 0.08);
+          box-shadow: 0 16px 40px rgba(24, 59, 86, 0.07);
         }
 
-        .rankRow {
+        .listHead {
           display: grid;
-          grid-template-columns: 62px 1fr 170px;
+          grid-template-columns: 70px 1fr 180px;
           gap: 18px;
-          padding: 22px 24px;
-          border-bottom: 1px solid #edf2f5;
+          padding: 16px 22px;
+          background: #f1f6f9;
+          color: #7b8794;
+          font-size: 13px;
+          font-weight: 900;
+        }
+
+        .listRow {
+          display: grid;
+          grid-template-columns: 70px 1fr 180px;
+          gap: 18px;
+          padding: 22px;
+          border-top: 1px solid #edf2f5;
           align-items: center;
         }
 
-        .rankRow:last-child {
-          border-bottom: none;
-        }
-
-        .rankNum {
-          width: 42px;
-          height: 42px;
-          border-radius: 15px;
+        .rank {
+          width: 38px;
+          height: 38px;
+          border-radius: 14px;
           background: #eaf6fa;
           color: #183b56;
           display: flex;
@@ -746,90 +643,85 @@ export default function Home() {
           font-weight: 900;
         }
 
-        .titleLine {
+        .mainLine {
           display: flex;
-          gap: 10px;
           align-items: baseline;
+          gap: 10px;
           flex-wrap: wrap;
         }
 
-        .titleLine strong {
+        .mainLine strong {
           color: #1f2933;
-          font-size: 19px;
+          font-size: 18px;
         }
 
-        .titleLine span {
+        .mainLine em {
+          font-style: normal;
           color: #1f6f5b;
           font-weight: 900;
         }
 
-        .metaLine {
+        .subLine {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
-          margin: 10px 0 0;
+          margin-top: 9px;
         }
 
-        .metaLine span {
+        .subLine span {
           background: #f5f8fa;
           color: #52616b;
           border-radius: 999px;
-          padding: 6px 10px;
+          padding: 5px 9px;
           font-size: 13px;
           font-weight: 700;
         }
 
-        .rankInfo p {
-          margin: 10px 0 0;
+        .info p {
+          margin: 9px 0 0;
           color: #7b8794;
           font-size: 14px;
           line-height: 1.5;
         }
 
-        .rankPrice {
+        .priceArea {
           text-align: right;
         }
 
-        .rankPrice strong {
+        .priceArea > strong {
           display: block;
           color: #f26b5e;
           font-size: 24px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
-        .actions {
+        .priceArea div {
           display: flex;
+          gap: 7px;
           justify-content: flex-end;
-          gap: 8px;
         }
 
-        .actions a {
+        .priceArea a {
           text-decoration: none;
-          color: #183b56;
           background: #eaf6fa;
+          color: #183b56;
           border-radius: 999px;
-          padding: 8px 11px;
+          padding: 7px 10px;
           font-size: 13px;
           font-weight: 900;
         }
 
-        @media (max-width: 820px) {
-          .hero {
-            padding: 22px 18px 58px;
-            border-bottom-left-radius: 28px;
-            border-bottom-right-radius: 28px;
+        @media (max-width: 760px) {
+          .headerInner {
+            padding: 16px;
           }
 
-          .navLinks {
+          nav {
             display: none;
           }
 
-          .heroInner {
-            grid-template-columns: 1fr;
-          }
-
-          .heroVisual {
-            display: none;
+          .searchSection {
+            padding: 42px 18px 26px;
           }
 
           .searchBox {
@@ -840,43 +732,38 @@ export default function Home() {
             padding: 15px;
           }
 
-          .summaryBand {
-            margin: -26px 18px 0;
-            grid-template-columns: 1fr;
+          .content {
+            padding: 18px 18px 60px;
           }
 
-          .summaryBand div {
-            border-right: none;
-            border-bottom: 1px solid #e4edf2;
-          }
-
-          .summaryBand div:last-child {
-            border-bottom: none;
-          }
-
-          .sectionHeader {
-            align-items: flex-start;
+          .contentTop {
             flex-direction: column;
+            align-items: flex-start;
           }
 
-          .introGrid {
+          .guideGrid {
             grid-template-columns: 1fr;
           }
 
-          .resultStats {
+          .stats {
             grid-template-columns: 1fr;
           }
 
-          .rankRow {
-            grid-template-columns: 42px 1fr;
+          .listHead {
+            display: none;
           }
 
-          .rankPrice {
+          .listRow {
+            grid-template-columns: 44px 1fr;
+            gap: 12px;
+          }
+
+          .priceArea {
             grid-column: 2;
             text-align: left;
           }
 
-          .actions {
+          .priceArea div {
             justify-content: flex-start;
           }
         }
